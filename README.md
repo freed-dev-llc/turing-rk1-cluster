@@ -1,8 +1,8 @@
 # Turing RK1 Kubernetes Cluster
 
-[![GitHub Release](https://img.shields.io/github/v/release/jfreed-dev/turing-rk1-cluster)](https://github.com/jfreed-dev/turing-rk1-cluster/releases)
-[![Lint](https://github.com/jfreed-dev/turing-rk1-cluster/actions/workflows/lint.yml/badge.svg)](https://github.com/jfreed-dev/turing-rk1-cluster/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/jfreed-dev/turing-rk1-cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/jfreed-dev/turing-rk1-cluster/actions/workflows/codeql.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/freed-dev-llc/turing-rk1-cluster)](https://github.com/freed-dev-llc/turing-rk1-cluster/releases)
+[![Lint](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml)
+[![CodeQL](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Talos](https://img.shields.io/badge/Talos-v1.11.6-blue)](https://www.talos.dev/)
 [![K3s](https://img.shields.io/badge/K3s-v1.31-FFC61C)](https://k3s.io/)
