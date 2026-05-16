@@ -11,7 +11,7 @@ on:
 jobs:
   analyze:
     name: CodeQL
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     permissions:
       security-events: write
       actions: read
