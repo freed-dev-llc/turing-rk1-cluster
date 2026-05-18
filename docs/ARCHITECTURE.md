@@ -5,6 +5,7 @@ This document provides visual architecture diagrams for the Turing RK1 Kubernete
 ## High-Level Overview
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph External["External Network (10.10.88.0/24)"]
         Client[Client Workstation]
@@ -50,6 +51,7 @@ flowchart TB
 ## Kubernetes Architecture
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph ControlPlane["Control Plane (Node 1)"]
         API["kube-apiserver<br/>:6443"]
@@ -105,6 +107,7 @@ flowchart TB
 ## Storage Architecture
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph StorageLayer["Longhorn Distributed Storage"]
         LM["Longhorn Manager"]
@@ -160,6 +163,7 @@ flowchart TB
 ## Network Traffic Flow
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart LR
     subgraph External["External"]
         User["User<br/>Browser/CLI"]
@@ -199,6 +203,7 @@ flowchart LR
 ## Monitoring Stack
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph Targets["Scrape Targets"]
         NodeExp["Node Exporter<br/>(per node)"]
@@ -237,6 +242,7 @@ flowchart TB
 ## Component Namespaces
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph kubesystem["kube-system namespace"]
         CoreDNS["coredns"]
@@ -280,6 +286,7 @@ flowchart TB
 ## Hardware Specifications
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph RK1["Turing RK1 Module (x4)"]
         subgraph SoC["Rockchip RK3588"]
@@ -333,6 +340,7 @@ flowchart TB
 ## Data Flow Example: Web Request
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 sequenceDiagram
     participant User
     participant DNS
@@ -357,6 +365,7 @@ sequenceDiagram
 ## Deployment Dependencies
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TD
     Talos["Talos Linux<br/>(Base OS)"] --> K8s["Kubernetes<br/>(Orchestration)"]
     K8s --> CoreDNS["CoreDNS"]
