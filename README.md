@@ -6,7 +6,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Talos](https://img.shields.io/badge/Talos-v1.13.2-blue)](https://www.talos.dev/)
 [![K3s](https://img.shields.io/badge/K3s-v1.31-FFC61C)](https://k3s.io/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.34.1-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35.0-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 
 A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supporting both **Talos Linux** and **K3s on Armbian** distributions. Designed for edge computing, AI/ML workloads with NPU acceleration, and distributed storage.
 
@@ -99,7 +99,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Kubernetes | v1.34.1 | Container orchestration |
+| Kubernetes | v1.35.0 | Container orchestration |
 | containerd | v2.1.5 | Container runtime |
 | etcd | Bundled | Distributed key-value store |
 
@@ -134,7 +134,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 |-----------|---------|---------|
 | Portainer Agent | v2.33.6 | Remote cluster management |
 | talosctl | v1.13.2 | Talos node management |
-| kubectl | v1.34.x | Kubernetes CLI |
+| kubectl | v1.35.x | Kubernetes CLI |
 | Helm | v3.x | Package manager |
 
 ---
