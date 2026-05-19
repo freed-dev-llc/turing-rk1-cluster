@@ -1,0 +1,14 @@
+# CODEOWNERS - Defines code owners for repository files
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @jfreed-dev
+
+# Workflow and CI configuration - require explicit review
+/.github/ @jfreed-dev
+
+# Cluster bootstrap + recovery scripts
+/scripts/ @jfreed-dev
+
+# Cluster manifests (MetalLB pool, etc.)
+/cluster-config/ @jfreed-dev
