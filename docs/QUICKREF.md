@@ -66,7 +66,7 @@ talosctl -n 10.10.88.73 services
 talosctl -n 10.10.88.74 reboot
 
 # Upgrade Talos
-talosctl -n 10.10.88.74 upgrade --image ghcr.io/siderolabs/installer:v1.11.6
+talosctl -n 10.10.88.74 upgrade --image ghcr.io/siderolabs/installer:v1.13.2
 ```
 
 ### Storage

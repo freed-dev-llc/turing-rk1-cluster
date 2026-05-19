@@ -601,7 +601,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 10.10.88.80-10.10.88.99
+  - 10.10.88.80-10.10.88.89
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -934,5 +934,5 @@ export TPI_HOSTNAME=10.10.88.70
 | K3s | v1.31.x |
 | Longhorn | v1.7.x |
 | MetalLB | v0.14.9 |
-| NGINX Ingress | v1.12.x |
+| NGINX Ingress | v1.13.x |
 | kube-prometheus-stack | latest |
