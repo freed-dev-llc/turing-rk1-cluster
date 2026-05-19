@@ -45,7 +45,7 @@ See [COMPARISON.md](COMPARISON.md) for the complete feature matrix.
 
 Both installation methods deploy the same workloads:
 
-- **MetalLB** - Load balancer (IP pool: 10.10.88.80-99)
+- **MetalLB** - Load balancer (IP pool: 10.10.88.80-89)
 - **NGINX Ingress** - Ingress controller at 10.10.88.80
 - **Longhorn** - Distributed storage on NVMe drives
 - **Prometheus Stack** - Monitoring (Grafana, Prometheus, Alertmanager)
@@ -78,6 +78,8 @@ Helper scripts in `../scripts/`:
 |--------|---------|
 | `setup-k3s-node.sh` | Prepare Armbian node for K3s |
 | `deploy-k3s-cluster.sh` | Deploy K3s cluster from workstation |
+| `deploy-talos-cluster.sh` | Deploy Talos cluster from workstation |
+| `talos-cluster-status.sh` | Show Talos cluster + node status at a glance |
 | `wipe-cluster.sh` | Reset cluster for distribution switch |
 
 ### Switching Distributions

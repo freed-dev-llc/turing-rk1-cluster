@@ -97,7 +97,7 @@ Both distributions deploy the same Kubernetes workloads:
 
 | Component | Version | Purpose | Notes |
 |-----------|---------|---------|-------|
-| **MetalLB** | v0.14.9 | LoadBalancer | L2 mode, IP pool 10.10.88.80-99 |
+| **MetalLB** | v0.14.9 | LoadBalancer | L2 mode, IP pool 10.10.88.80-89 |
 | **NGINX Ingress** | Latest | Ingress Controller | External IP: 10.10.88.80 |
 | **Longhorn** | v1.7.2 | Distributed Storage | NVMe-backed on workers |
 | **Prometheus Stack** | Latest | Monitoring | Grafana + Alertmanager |
