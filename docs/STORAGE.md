@@ -7,9 +7,9 @@ This document covers the storage setup for the Turing RK1 Kubernetes cluster usi
 | Node | eMMC (System) | NVMe (Data) | Total Longhorn |
 |------|---------------|-------------|----------------|
 | turing-cp1 | 31GB | - | ~24GB |
-| talos-0ow-v7t | 31GB | 500GB | ~481GB |
-| talos-6ed-cqn | 31GB | 500GB | ~481GB |
-| talos-700-itj | 31GB | 500GB | ~481GB |
+| turing-w1 | 31GB | 500GB | ~481GB |
+| turing-w2 | 31GB | 500GB | ~481GB |
+| turing-w3 | 31GB | 500GB | ~481GB |
 | **Total** | | | **~1.47TB** |
 
 ---
@@ -138,7 +138,7 @@ spec:
 Apply to worker nodes:
 
 ```bash
-for node in talos-0ow-v7t talos-6ed-cqn talos-700-itj; do
+for node in turing-w1 turing-w2 turing-w3; do
   kubectl patch nodes.longhorn.io/$node -n longhorn-system \
     --type=merge --patch-file=longhorn-node-patch.yaml
 done

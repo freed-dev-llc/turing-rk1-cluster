@@ -181,7 +181,7 @@ wget -O armbian-turing-rk1.img.xz \
 |---------|----------|
 | BMC | 10.10.88.70 |
 | Cluster Nodes | 10.10.88.73-76 |
-| MetalLB Pool | 10.10.88.80-99 |
+| MetalLB Pool | 10.10.88.80-89 |
 | Kubernetes API | 10.10.88.73:6443 |
 
 ### Assigned LoadBalancer IPs
