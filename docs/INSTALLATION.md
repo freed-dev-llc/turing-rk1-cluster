@@ -108,10 +108,10 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 | Node | Role | Hostname | IP Address | Storage |
 |------|------|----------|------------|---------|
-| Node 1 | Control Plane | turing-cp1 | 10.10.88.73 | 31GB eMMC (no NVMe by design) |
-| Node 2 | Worker | turing-w1 | 10.10.88.74 | 31GB eMMC + 500GB NVMe |
-| Node 3 | Worker | turing-w2 | 10.10.88.75 | 31GB eMMC + 500GB NVMe |
-| Node 4 | Worker | turing-w3 | 10.10.88.76 | 31GB eMMC + 500GB NVMe |
+| Node 1 | Control Plane | turing-cp1 | 10.10.88.73 | ~31GB eMMC usable (no NVMe by design) |
+| Node 2 | Worker | turing-w1 | 10.10.88.74 | ~31GB eMMC + 500GB NVMe |
+| Node 3 | Worker | turing-w2 | 10.10.88.75 | ~31GB eMMC + 500GB NVMe |
+| Node 4 | Worker | turing-w3 | 10.10.88.76 | ~31GB eMMC + 500GB NVMe |
 
 **Hardware Specifications (per RK1 node):**
 - SoC: Rockchip RK3588 (8-core ARM64)
@@ -750,7 +750,7 @@ kubectl create namespace ingress-nginx
 kubectl label namespace ingress-nginx pod-security.kubernetes.io/enforce=privileged
 
 # Install NGINX Ingress Controller (cloud provider version for LoadBalancer support)
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0-beta.0/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.3/deploy/static/provider/cloud/deploy.yaml
 
 # Wait for controller to be ready
 kubectl wait --namespace ingress-nginx \
