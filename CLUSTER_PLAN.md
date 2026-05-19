@@ -72,7 +72,7 @@ Power down all nodes first, then flash sequentially:
 
 ```bash
 # Set image path
-IMAGE_PATH="/home/jon/Code/turing-rk1-cluster/images/latest/metal-arm64.raw"
+IMAGE_PATH="$REPO_ROOT/images/latest/metal-arm64.raw"
 
 # Flash all 4 nodes (run from BMC or use tpi remotely)
 # Option A: Via BMC SSH
@@ -112,8 +112,8 @@ export WORKER_IPS=("10.10.88.74" "10.10.88.75" "10.10.88.76")
 export KUBERNETES_ENDPOINT="https://${CONTROL_PLANE_IP}:6443"
 
 # Working directory for configs
-mkdir -p ~/Code/turing-rk1-cluster/cluster-config
-cd ~/Code/turing-rk1-cluster/cluster-config
+mkdir -p $REPO_ROOT/cluster-config
+cd $REPO_ROOT/cluster-config
 ```
 
 ### Generate Cluster Secrets

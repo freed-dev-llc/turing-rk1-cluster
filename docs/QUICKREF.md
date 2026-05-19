@@ -1,11 +1,15 @@
 # Quick Reference Card
 
+> `$REPO_ROOT` in the snippets below refers to your local checkout of this repo.
+> Either `export REPO_ROOT="$(pwd)"` from the repo root, or substitute the path
+> by hand.
+
 ## Cluster Access
 
 ```bash
 # Set environment
-export TALOSCONFIG=/home/jon/Code/turing-rk1-cluster/cluster-config/talosconfig
-export KUBECONFIG=/home/jon/Code/turing-rk1-cluster/cluster-config/kubeconfig
+export TALOSCONFIG=$REPO_ROOT/cluster-config/talosconfig
+export KUBECONFIG=$REPO_ROOT/cluster-config/kubeconfig
 
 # Or use explicit paths
 kubectl --kubeconfig=/path/to/kubeconfig get nodes

@@ -114,19 +114,19 @@ flowchart TB
         LE["Longhorn Engine"]
 
         subgraph Node2Storage["Worker 1 Storage"]
-            eMMC2["eMMC<br/>31GB"]
+            eMMC2["eMMC<br/>~31GB usable"]
             NVMe2["NVMe<br/>500GB"]
             LR2["Longhorn<br/>Replica"]
         end
 
         subgraph Node3Storage["Worker 2 Storage"]
-            eMMC3["eMMC<br/>31GB"]
+            eMMC3["eMMC<br/>~31GB usable"]
             NVMe3["NVMe<br/>500GB"]
             LR3["Longhorn<br/>Replica"]
         end
 
         subgraph Node4Storage["Worker 3 Storage"]
-            eMMC4["eMMC<br/>31GB"]
+            eMMC4["eMMC<br/>~31GB usable"]
             NVMe4["NVMe<br/>500GB"]
             LR4["Longhorn<br/>Replica"]
         end
