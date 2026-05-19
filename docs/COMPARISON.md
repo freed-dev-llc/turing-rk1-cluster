@@ -22,7 +22,7 @@ This document provides a comprehensive comparison between the two Kubernetes dis
 
 | Feature | Talos Linux | K3s on Armbian |
 |---------|-------------|----------------|
-| **Kubernetes Version** | v1.34.1 | v1.31.x (latest) |
+| **Kubernetes Version** | v1.35.0 | v1.31.x (latest) |
 | **Container Runtime** | containerd v2.1.5 | containerd |
 | **etcd** | Bundled (Talos managed) | Bundled (SQLite or etcd) |
 | **CNI** | Flannel (bundled) | Flannel (default) |

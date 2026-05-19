@@ -9,7 +9,7 @@ machine:
         key: <REDACTED>
     certSANs: []
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.34.1
+        image: ghcr.io/siderolabs/kubelet:v1.35.0
         extraMounts:
             - destination: /var/lib/longhorn
               type: bind
@@ -31,7 +31,7 @@ machine:
             - mountpoint: /var/lib/longhorn
     install:
         disk: /dev/mmcblk0
-        image: ghcr.io/siderolabs/installer:v1.11.6
+        image: ghcr.io/siderolabs/installer:v1.13.2
         wipe: false
     features:
         rbac: true
@@ -69,7 +69,7 @@ cluster:
     serviceAccount:
         key: <REDACTED>
     apiServer:
-        image: registry.k8s.io/kube-apiserver:v1.34.1
+        image: registry.k8s.io/kube-apiserver:v1.35.0
         certSANs:
             - 10.10.88.73
         disablePodSecurityPolicy: true
@@ -96,11 +96,11 @@ cluster:
             rules:
                 - level: Metadata
     controllerManager:
-        image: registry.k8s.io/kube-controller-manager:v1.34.1
+        image: registry.k8s.io/kube-controller-manager:v1.35.0
     proxy:
-        image: registry.k8s.io/kube-proxy:v1.34.1
+        image: registry.k8s.io/kube-proxy:v1.35.0
     scheduler:
-        image: registry.k8s.io/kube-scheduler:v1.34.1
+        image: registry.k8s.io/kube-scheduler:v1.35.0
     discovery:
         enabled: true
         registries:

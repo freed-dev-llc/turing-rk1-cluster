@@ -9,7 +9,7 @@ machine:
         key: ""
     certSANs: []
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.34.1
+        image: ghcr.io/siderolabs/kubelet:v1.35.0
         extraMounts:
             - destination: /var/lib/longhorn
               type: bind
@@ -26,7 +26,7 @@ machine:
               dhcp: true
     install:
         disk: /dev/mmcblk0
-        image: ghcr.io/siderolabs/installer:v1.11.6
+        image: ghcr.io/siderolabs/installer:v1.13.2
         wipe: false
     features:
         rbac: true

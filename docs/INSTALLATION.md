@@ -644,10 +644,10 @@ kubectl get nodes -w
 
 # Expected output:
 # NAME         STATUS   ROLES           AGE   VERSION
-# turing-cp1   Ready    control-plane   10m   v1.34.1
-# turing-w1    Ready    <none>          2m    v1.34.1
-# turing-w2    Ready    <none>          2m    v1.34.1
-# turing-w3    Ready    <none>          2m    v1.34.1
+# turing-cp1   Ready    control-plane   10m   v1.35.0
+# turing-w1    Ready    <none>          2m    v1.35.0
+# turing-w2    Ready    <none>          2m    v1.35.0
+# turing-w3    Ready    <none>          2m    v1.35.0
 ```
 
 ### If Worker Has Wrong Certificates
@@ -911,10 +911,10 @@ kubectl get ingress -A
 
 ```
 NAME         STATUS   ROLES           AGE   VERSION
-turing-cp1   Ready    control-plane   1h    v1.34.1
-turing-w1    Ready    <none>          1h    v1.34.1
-turing-w2    Ready    <none>          1h    v1.34.1
-turing-w3    Ready    <none>          1h    v1.34.1
+turing-cp1   Ready    control-plane   1h    v1.35.0
+turing-w1    Ready    <none>          1h    v1.35.0
+turing-w2    Ready    <none>          1h    v1.35.0
+turing-w3    Ready    <none>          1h    v1.35.0
 ```
 
 ---
@@ -993,7 +993,7 @@ talosctl -n <node-ip> mounts | grep nvme
 | Component | Version |
 |-----------|---------|
 | Talos | v1.13.2 |
-| Kubernetes | v1.34.1 |
+| Kubernetes | v1.35.0 |
 | Longhorn | v1.7.2 |
 | MetalLB | v0.14.9 |
 | Ingress NGINX | v1.13.3 |
