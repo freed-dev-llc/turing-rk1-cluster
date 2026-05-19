@@ -443,4 +443,4 @@ This is a personal homelab cluster. Configuration files and documentation are pr
 
 ## License
 
-Configuration files and documentation are provided under MIT license. Third-party components retain their original licenses.
+Configuration files and documentation are provided under the Apache 2.0 license (see [LICENSE](LICENSE)). Third-party components retain their original licenses.

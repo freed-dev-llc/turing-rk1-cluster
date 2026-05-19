@@ -729,7 +729,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    - 10.10.88.80-10.10.88.99
+    - 10.10.88.80-10.10.88.89
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -996,7 +996,7 @@ talosctl -n <node-ip> mounts | grep nvme
 | Kubernetes | v1.34.1 |
 | Longhorn | v1.7.2 |
 | MetalLB | v0.14.9 |
-| Ingress NGINX | v1.12.0-beta.0 |
+| Ingress NGINX | v1.13.3 |
 | kube-prometheus-stack | latest (Helm) |
 
 ---
