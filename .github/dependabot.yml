@@ -11,6 +11,10 @@ updates:
     labels:
       - "dependencies"
       - "submodules"
+    ignore:
+      # Dependabot's gitsubmodule updater crashes on this repo (unknown_error,
+      # null details). Tracked via run 26065101426 on 2026-05-18. Update by hand.
+      - dependency-name: "repo/u-boot-rockchip"
 
   # Update GitHub Actions
   - package-ecosystem: "github-actions"
