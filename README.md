@@ -1,5 +1,7 @@
 # Turing RK1 Kubernetes Cluster
 
+![Turing RK1 Cluster — Configuration](docs/assets/turing-cluster/logos/turing_cluster_logo_config_horizontal.svg)
+
 [![GitHub Release](https://img.shields.io/github/v/release/freed-dev-llc/turing-rk1-cluster)](https://github.com/freed-dev-llc/turing-rk1-cluster/releases)
 [![Lint](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml)
 [![CodeQL](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml)
@@ -7,6 +9,12 @@
 [![Talos](https://img.shields.io/badge/Talos-v1.13.2-blue)](https://www.talos.dev/)
 [![K3s](https://img.shields.io/badge/K3s-v1.31-FFC61C)](https://k3s.io/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35.0-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+
+**Related Turing Pi projects:**
+
+[![Turing RK1 Ansible — freed-dev-llc/turing-ansible-cluster](docs/assets/buttons/btn_turing_ansible_cluster.svg)](https://github.com/freed-dev-llc/turing-ansible-cluster)
+[![Turing Pi Provider — freed-dev-llc/terraform-provider-turingpi](docs/assets/buttons/btn_terraform_provider_turingpi.svg)](https://github.com/freed-dev-llc/terraform-provider-turingpi)
+[![Turing Pi Modules — freed-dev-llc/terraform-turingpi-modules](docs/assets/buttons/btn_terraform_turingpi_modules.svg)](https://github.com/freed-dev-llc/terraform-turingpi-modules)
 
 A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supporting both **Talos Linux** and **K3s on Armbian** distributions. Designed for edge computing, AI/ML workloads with NPU acceleration, and distributed storage.
 

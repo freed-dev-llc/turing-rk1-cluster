@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 372 72" width="372" height="72" role="img" aria-label="Turing Pi Terraform modules — freed-dev-llc/terraform-turingpi-modules">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A2C39"/><stop offset="1" stop-color="#0F1C25"/></linearGradient>
+    <linearGradient id="node" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9DBA"/><stop offset="1" stop-color="#4E7C97"/></linearGradient>
+    <linearGradient id="cp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4683F"/><stop offset="1" stop-color="#974124"/></linearGradient>
+  </defs>
+
+  <rect x="1" y="1" width="370" height="70" rx="16" fill="url(#bg)" stroke="#2C4C61" stroke-width="1.5"/>
+
+  <!-- glyph: 2x2 cluster (control plane in terracotta) -->
+  <g transform="translate(23,13) scale(0.32)">
+    <g stroke="#4E7C97" fill="none" stroke-linecap="round">
+      <g opacity="0.5" stroke-width="3">
+        <line x1="30" y1="30" x2="114" y2="30"/><line x1="30" y1="114" x2="114" y2="114"/>
+        <line x1="30" y1="30" x2="30" y2="114"/><line x1="114" y1="30" x2="114" y2="114"/>
+      </g>
+      <g opacity="0.26" stroke-width="2">
+        <line x1="30" y1="30" x2="114" y2="114"/><line x1="114" y1="30" x2="30" y2="114"/>
+      </g>
+    </g>
+    <!-- MODULE MARK: curly braces framing the cluster - the HCL module block { } that wraps it -->
+    <g fill="none" stroke="#C4683F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+      <path d="M -10 -8 Q -22 -8 -22 6 L -22 58 Q -22 72 -34 72 Q -22 72 -22 86 L -22 138 Q -22 152 -10 152"/>
+      <path d="M 154 -8 Q 166 -8 166 6 L 166 58 Q 166 72 178 72 Q 166 72 166 86 L 166 138 Q 166 152 154 152"/>
+    </g>
+    <g stroke="#EAF2F7" stroke-opacity="0.10" stroke-width="1">
+      <rect x="0" y="0" width="60" height="60" rx="13" fill="url(#cp)"/>
+      <rect x="84" y="0" width="60" height="60" rx="13" fill="url(#node)"/>
+      <rect x="0" y="84" width="60" height="60" rx="13" fill="url(#node)"/>
+      <rect x="84" y="84" width="60" height="60" rx="13" fill="url(#node)"/>
+    </g>
+    <g>
+      <circle cx="30" cy="30" r="6" fill="#FBEEE3" opacity="0.92"/>
+      <circle cx="114" cy="30" r="6" fill="#EAF2F7" opacity="0.85"/>
+      <circle cx="30" cy="114" r="6" fill="#EAF2F7" opacity="0.85"/>
+      <circle cx="114" cy="114" r="6" fill="#EAF2F7" opacity="0.85"/>
+    </g>
+  </g>
+
+  <!-- label -->
+  <g font-family="'Segoe UI','SF Pro Display',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif">
+    <text x="94" y="31" font-size="18" font-weight="700" letter-spacing="0.3" fill="#EAF2F7">Turing Pi <tspan fill="#C4683F">Modules</tspan></text>
+    <text x="94" y="52" font-size="10.5" font-weight="500" letter-spacing="0.2" fill="#7FA6BC" font-family="'SF Mono',ui-monospace,Menlo,Consolas,monospace">freed-dev-llc/terraform-turingpi-modules</text>
+  </g>
+</svg>
