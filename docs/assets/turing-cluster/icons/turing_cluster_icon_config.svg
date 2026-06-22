@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Turing RK1 Configuration">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A2C39"/><stop offset="1" stop-color="#0F1C25"/></linearGradient>
+    <linearGradient id="node" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9DBA"/><stop offset="1" stop-color="#4E7C97"/></linearGradient>
+    <linearGradient id="cp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4683F"/><stop offset="1" stop-color="#974124"/></linearGradient>
+  </defs>
+  <rect x="2" y="2" width="252" height="252" rx="48" fill="url(#bg)" stroke="#2C4C61" stroke-width="2"/>
+  <g transform="translate(63,63) scale(0.9)">
+    <g opacity="0.85"><path d="M 173.31,103.17 L 187.76,116.44 L 180.66,131.74 L 161.20,129.27 L 144.16,149.65 L 150.04,168.37 L 136.24,178.07 L 120.62,166.19 L 95.66,175.32 L 91.40,194.47 L 74.60,195.97 L 67.01,177.88 L 40.83,173.31 L 27.56,187.76 L 12.26,180.66 L 14.73,161.20 L -5.65,144.16 L -24.37,150.04 L -34.07,136.24 L -22.19,120.62 L -31.32,95.66 L -50.47,91.40 L -51.97,74.60 L -33.88,67.01 L -29.31,40.83 L -43.76,27.56 L -36.66,12.26 L -17.20,14.73 L -0.16,-5.65 L -6.04,-24.37 L 7.76,-34.07 L 23.38,-22.19 L 48.34,-31.32 L 52.60,-50.47 L 69.40,-51.97 L 76.99,-33.88 L 103.17,-29.31 L 116.44,-43.76 L 131.74,-36.66 L 129.27,-17.20 L 149.65,-0.16 L 168.37,-6.04 L 178.07,7.76 L 166.19,23.38 L 175.32,48.34 L 194.47,52.60 L 195.97,69.40 L 177.88,76.99 Z" fill="none" stroke="#C4683F" stroke-width="7" stroke-linejoin="round"/></g>
+    <g stroke="#4E7C97" fill="none" stroke-linecap="round">
+      <g opacity="0.5" stroke-width="3"><line x1="30" y1="30" x2="114" y2="30"/><line x1="30" y1="114" x2="114" y2="114"/><line x1="30" y1="30" x2="30" y2="114"/><line x1="114" y1="30" x2="114" y2="114"/></g>
+      <g opacity="0.26" stroke-width="2"><line x1="30" y1="30" x2="114" y2="114"/><line x1="114" y1="30" x2="30" y2="114"/></g></g>
+    <g stroke="#EAF2F7" stroke-opacity="0.10" stroke-width="1">
+      <rect x="0" y="0" width="60" height="60" rx="13" fill="url(#cp)"/><rect x="84" y="0" width="60" height="60" rx="13" fill="url(#node)"/>
+      <rect x="0" y="84" width="60" height="60" rx="13" fill="url(#node)"/><rect x="84" y="84" width="60" height="60" rx="13" fill="url(#node)"/></g>
+    <g><circle cx="30" cy="30" r="6" fill="#FBEEE3" opacity="0.92"/><circle cx="114" cy="30" r="6" fill="#EAF2F7" opacity="0.85"/>
+      <circle cx="30" cy="114" r="6" fill="#EAF2F7" opacity="0.85"/><circle cx="114" cy="114" r="6" fill="#EAF2F7" opacity="0.85"/></g>
+  </g>
+</svg>
