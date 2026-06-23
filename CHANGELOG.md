@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`deploy-talos-cluster.sh` hardened for real RK1 / Talos v1.13 deploys** (found and validated end-to-end on the 4-node hardware):
+  - Pin Kubernetes via `--kubernetes-version` (default `K8S_VERSION=v1.35.0`) — the script previously deployed Talos's default (v1.36.2), not the repo's intended version ([#47](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/47)).
+  - Set `machine.install.image` to the Factory **schematic** installer (`factory.talos.dev/installer/<SCHEMATIC_ID>:<version>`) so the `sbc-rockchip` overlay + `rockchip-rknn` NPU extension survive `talosctl upgrade` (was the plain `ghcr.io/siderolabs/installer`) ([#45](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/45)).
+  - Stage the flash image on the BMC microSD (`/mnt/sdcard`; override `BMC_IMAGE_PATH`) instead of `/tmp` — the Turing Pi 2 BMC's `/tmp` is a ~58 MB tmpfs that cannot hold the 2.2 GB image ([#44](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/44)).
+  - Bootstrap now polls the **secure** API (a configured node stops serving the insecure API), guards on real etcd membership (`get etcdmembers`), and retries until etcd is ready ([#39](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/39)).
+- **`cluster-config/*-patch.yaml`**: drop the legacy `machine.network.hostname` — on Talos v1.13 it conflicts with the `HostnameConfig` document and fails `talosctl validate` ([#46](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/46)).
+
 ## [1.2.0] - 2026-06-23
 
 ### Added

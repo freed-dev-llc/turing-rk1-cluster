@@ -1,6 +1,9 @@
 machine:
   network:
-    hostname: turing-cp1
+    # Talos v1.13 manages the hostname via a separate HostnameConfig document
+    # (auto: stable). Setting machine.network.hostname here conflicts with it and
+    # fails validation ("static hostname is already set in v1alpha1 config"). For a
+    # static name, edit the HostnameConfig document in the generated config instead.
     interfaces:
       - interface: eth0
         dhcp: true
