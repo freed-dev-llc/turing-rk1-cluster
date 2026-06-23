@@ -108,7 +108,7 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 | Node | Role | Hostname | IP Address | Storage |
 |------|------|----------|------------|---------|
-| Node 1 | Control Plane | turing-cp1 | 10.10.88.73 | ~31GB eMMC usable (no NVMe by design) |
+| Node 1 | Control Plane | turing-cp1 | 10.10.88.73 | ~31GB eMMC + 500GB NVMe |
 | Node 2 | Worker | turing-w1 | 10.10.88.74 | ~31GB eMMC + 500GB NVMe |
 | Node 3 | Worker | turing-w2 | 10.10.88.75 | ~31GB eMMC + 500GB NVMe |
 | Node 4 | Worker | turing-w3 | 10.10.88.76 | ~31GB eMMC + 500GB NVMe |

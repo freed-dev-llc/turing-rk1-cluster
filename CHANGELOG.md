@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-23
+
 ### Fixed
 
 - **`deploy-talos-cluster.sh` hardened for real RK1 / Talos v1.13 deploys** (found and validated end-to-end on the 4-node hardware):
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`cluster-config/*-patch.yaml`**: drop the legacy `machine.network.hostname` — on Talos v1.13 it conflicts with the `HostnameConfig` document and fails `talosctl validate` ([#46](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/46)).
 - **`wipe-cluster.sh`**: reset each Talos node via its own endpoint (`--endpoints $ip`) — resets previously proxied through the control-plane endpoint, so worker resets failed once the CP was reset ([#49](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/49)).
 - **`cluster-config/`**: renamed the tracked `controlplane.yaml` / `worker.yaml` to `*.example.yaml` (sanitized references) and gitignored the working names — `deploy-talos-cluster.sh generate` writes real cluster secrets to `controlplane.yaml` / `worker.yaml`, which were tracked and therefore stage-able by `git add -A` ([#40](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/40)).
+- **Docs:** marked the Talos NPU `rocket` driver binding as **verified on real hardware** (was an unverified caveat — `/dev/accel/accel0` confirmed on all 4 nodes); corrected the stale "control plane has no NVMe by design" claim — all 4 nodes have a 500GB NVMe and the control plane's is used for Longhorn (`allowSchedulingOnControlPlanes`); NVMe storage total `1.5TB` → `2TB`.
 
 ## [1.2.0] - 2026-06-23
 

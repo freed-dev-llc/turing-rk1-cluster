@@ -66,7 +66,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 | GPU | Mali-G610 MP4 |
 | NPU | 6 TOPS (INT8) - *see limitations* |
 | eMMC | 32GB (system disk) |
-| NVMe | 500GB Crucial P3 (worker nodes) |
+| NVMe | 500GB Crucial P3 (all 4 nodes) |
 
 ### Cluster Topology
 
@@ -78,7 +78,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 │   Node 1    │   Node 2    │   Node 3    │      Node 4       │
 │ Control Pl. │   Worker    │   Worker    │      Worker       │
 │ 10.10.88.73 │ 10.10.88.74 │ 10.10.88.75 │   10.10.88.76     │
-│   32GB eMMC │ 32GB + 500GB│ 32GB + 500GB│  32GB + 500GB     │
+│ 32GB + 500GB│ 32GB + 500GB│ 32GB + 500GB│  32GB + 500GB     │
 └─────────────┴─────────────┴─────────────┴───────────────────┘
 ```
 
@@ -89,7 +89,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 | CPU Cores | 32 (8 per node) |
 | RAM | 64-128GB |
 | Storage (eMMC) | 128GB |
-| Storage (NVMe) | 1.5TB |
+| Storage (NVMe) | 2TB (4x 500GB) |
 | Network | 4x 1Gbps |
 
 ---
@@ -158,7 +158,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 - Health monitoring and self-healing
 
 **Distributed Storage**
-- ~1.5TB distributed storage via Longhorn
+- ~2TB raw NVMe (4x 500GB) for distributed Longhorn storage
 - Volume replication across nodes (configurable 1-3 replicas)
 - Snapshots and backups
 - Dynamic volume provisioning
@@ -213,7 +213,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 1. **Run RKNN/RKLLM workloads on K3s on Armbian** - full NPU support with the RKNN SDK (see [docs/INSTALLATION-K3S.md](docs/INSTALLATION-K3S.md))
 2. **On Talos**, use the open `rocket`/Teflon path for small CNNs, or CPU-based inference (ONNX Runtime, TensorFlow Lite)
 
-> **Note:** the `rocket` driver only binds if the RK1 device tree enables the NPU node - verify on hardware with `ls /dev/accel/` and `dmesg | grep -i rocket` after applying the extension.
+> **Verified on real RK1 hardware (2026-06-23):** the `rocket` driver binds (kernel module Live) and `/dev/accel/accel0` is present on all 4 nodes running Talos v1.13.5 + the `rockchip-rknn` extension. Check with `talosctl get modules` / `talosctl list /dev/accel/`.
 
 ### GPU: Partial on Talos, Full on K3s
 
@@ -230,7 +230,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 
 | Issue | Status | Details |
 |-------|--------|---------|
-| Control plane has no NVMe | By Design | Only workers have NVMe; CP uses eMMC only |
+| All 4 nodes have a 500GB NVMe | Info | The control plane is schedulable (`allowSchedulingOnControlPlanes`) and its NVMe is used for Longhorn, like the workers |
 | Single replica risk | Configurable | Default 3 replicas; 2-replica mode loses redundancy if node fails |
 
 ### Network Limitations
