@@ -1,5 +1,5 @@
 # Sensitive files
-cluster-config/kubeconfig
+cluster-config/kubeconfig*
 cluster-config/talosconfig
 cluster-config/secrets.yaml
 cluster-config/*-final.yaml
