@@ -22,7 +22,7 @@ if [[ -f "${PROJECT_DIR}/.env" ]]; then
 fi
 IMAGE_DIR="${PROJECT_DIR}/images/latest"
 TALOS_IMAGE="${IMAGE_DIR}/metal-arm64.raw"
-TALOS_VERSION="v1.13.2"
+TALOS_VERSION="v1.13.5"
 
 # Network configuration
 BMC_HOST="${BMC_HOST:-10.10.88.70}"

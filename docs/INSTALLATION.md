@@ -244,16 +244,16 @@ curl -s -X POST --data-binary @talos-schematic.yaml \
 
 ### Step 3: Image URLs
 
-**Current Image (Talos v1.13.2):**
+**Current Image (Talos v1.13.5):**
 ```
-https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz
+https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz
 ```
 
 To download locally:
 ```bash
 mkdir -p images/latest
 wget -O images/latest/metal-arm64.raw.xz \
-  "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz"
+  "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz"
 ```
 
 ---
@@ -268,16 +268,16 @@ Download the image locally first, then flash using `--image-path`:
 # Ensure TPI_USERNAME, TPI_PASSWORD, TPI_HOSTNAME env vars are set
 
 # Download image locally
-wget -O /tmp/talos-rk1-v1.13.2.raw.xz \
-  "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz"
+wget -O /tmp/talos-rk1-v1.13.5.raw.xz \
+  "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz"
 
 # Flash control plane (node 1)
-tpi flash -n 1 --image-path /tmp/talos-rk1-v1.13.2.raw.xz
+tpi flash -n 1 --image-path /tmp/talos-rk1-v1.13.5.raw.xz
 
 # Flash worker nodes
 for node in 2 3 4; do
   echo "Flashing node $node..."
-  tpi flash -n $node --image-path /tmp/talos-rk1-v1.13.2.raw.xz
+  tpi flash -n $node --image-path /tmp/talos-rk1-v1.13.5.raw.xz
 done
 
 # Power on all nodes after flashing
@@ -293,7 +293,7 @@ If the node is running Ubuntu or another OS with SSH access:
 ssh ubuntu@<node-ip>
 
 # Download Talos image
-wget https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz
+wget https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz
 
 # Decompress
 xz -d metal-arm64.raw.xz
@@ -396,7 +396,7 @@ If a node boots from NVMe instead of eMMC, the NVMe likely has bootable content 
 8. **Flash Talos:**
    ```bash
    # Ensure TPI_USERNAME, TPI_PASSWORD, TPI_HOSTNAME env vars are set \
-     tpi flash -n 1 --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz"
+     tpi flash -n 1 --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz"
    ```
 
 9. **Power on - node should now boot Talos from eMMC:**
@@ -657,7 +657,7 @@ If a worker was configured with a different cluster's secrets:
 ```bash
 # Reflash the node
 # Ensure TPI_USERNAME, TPI_PASSWORD, TPI_HOSTNAME env vars are set \
-  tpi flash -n 2 --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz"
+  tpi flash -n 2 --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz"
 
 # Power on
 # Ensure TPI_USERNAME, TPI_PASSWORD, TPI_HOSTNAME env vars are set tpi power on -n 2
@@ -945,7 +945,7 @@ nc -zv <node-ip> 50000
 ```bash
 # Must reflash the node
 # Ensure TPI_USERNAME, TPI_PASSWORD, TPI_HOSTNAME env vars are set \
-  tpi flash -n <node> --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.2/metal-arm64.raw.xz"
+  tpi flash -n <node> --image-url "https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.13.5/metal-arm64.raw.xz"
 ```
 
 ### Node Boots Wrong OS
@@ -992,7 +992,7 @@ talosctl -n <node-ip> mounts | grep nvme
 
 | Component | Version |
 |-----------|---------|
-| Talos | v1.13.2 |
+| Talos | v1.13.5 |
 | Kubernetes | v1.35.0 |
 | Longhorn | v1.7.2 |
 | MetalLB | v0.14.9 |

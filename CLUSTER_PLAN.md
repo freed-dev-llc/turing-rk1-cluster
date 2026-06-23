@@ -13,7 +13,7 @@ Deploy a 4-node Kubernetes cluster on Turing RK1 boards (RK3588 SoC) with Talos 
 | Node 2 (Worker) | 10.10.88.74 |
 | Node 3 (Worker) | 10.10.88.75 |
 | Node 4 (Worker) | 10.10.88.76 |
-| OS | Talos Linux v1.13.2 |
+| OS | Talos Linux v1.13.5 |
 | Storage | NVMe (each node) + Longhorn distributed storage |
 | NPU | RK3588 NPU with RKNN Runtime |
 
@@ -22,7 +22,7 @@ Deploy a 4-node Kubernetes cluster on Turing RK1 boards (RK3588 SoC) with Talos 
 ## Phase 1: Talos Image Preparation
 
 ### Current Image Status
-- **Available**: `images/latest/metal-arm64.raw` (v1.13.2, 2.2GB decompressed)
+- **Available**: `images/latest/metal-arm64.raw` (v1.13.5, 2.2GB decompressed)
 - **Source**: https://factory.talos.dev
 
 ### Required System Extensions
@@ -43,12 +43,12 @@ Generate a new image with required extensions from [Talos Image Factory](https:/
 
 ```bash
 # 1. Go to https://factory.talos.dev
-# 2. Select: Single Board Computers → Talos v1.13.2 → Turing RK1
+# 2. Select: Single Board Computers → Talos v1.13.5 → Turing RK1
 # 3. Add extensions:
 #    - siderolabs/iscsi-tools
 #    - siderolabs/util-linux-tools
 # 4. Download and decompress:
-curl -LO https://factory.talos.dev/image/<schematic-id>/v1.13.2/metal-arm64.raw.xz
+curl -LO https://factory.talos.dev/image/<schematic-id>/v1.13.5/metal-arm64.raw.xz
 xz -d metal-arm64.raw.xz
 mv metal-arm64.raw images/latest/
 ```
@@ -276,10 +276,10 @@ kubectl get nodes
 Expected output:
 ```
 NAME         STATUS   ROLES           AGE   VERSION
-turing-cp1   Ready    control-plane   Xm    v1.34.x
-turing-w1    Ready    <none>          Xm    v1.34.x
-turing-w2    Ready    <none>          Xm    v1.34.x
-turing-w3    Ready    <none>          Xm    v1.34.x
+turing-cp1   Ready    control-plane   Xm    v1.35.x
+turing-w1    Ready    <none>          Xm    v1.35.x
+turing-w2    Ready    <none>          Xm    v1.35.x
+turing-w3    Ready    <none>          Xm    v1.35.x
 ```
 
 ---
