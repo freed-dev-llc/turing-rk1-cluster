@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Stage the flash image on the BMC microSD (`/mnt/sdcard`; override `BMC_IMAGE_PATH`) instead of `/tmp` — the Turing Pi 2 BMC's `/tmp` is a ~58 MB tmpfs that cannot hold the 2.2 GB image ([#44](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/44)).
   - Bootstrap now polls the **secure** API (a configured node stops serving the insecure API), guards on real etcd membership (`get etcdmembers`), and retries until etcd is ready ([#39](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/39)).
 - **`cluster-config/*-patch.yaml`**: drop the legacy `machine.network.hostname` — on Talos v1.13 it conflicts with the `HostnameConfig` document and fails `talosctl validate` ([#46](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/46)).
+- **`wipe-cluster.sh`**: reset each Talos node via its own endpoint (`--endpoints $ip`) — resets previously proxied through the control-plane endpoint, so worker resets failed once the CP was reset ([#49](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/49)).
+- **`cluster-config/`**: renamed the tracked `controlplane.yaml` / `worker.yaml` to `*.example.yaml` (sanitized references) and gitignored the working names — `deploy-talos-cluster.sh generate` writes real cluster secrets to `controlplane.yaml` / `worker.yaml`, which were tracked and therefore stage-able by `git add -A` ([#40](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/40)).
 
 ## [1.2.0] - 2026-06-23
 

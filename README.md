@@ -402,8 +402,8 @@ turing-rk1-cluster/
 │   ├── talosconfig           # Talos CLI config
 │   ├── kubeconfig            # Kubernetes access
 │   ├── secrets.yaml          # Cluster secrets (sensitive!)
-│   ├── controlplane.yaml     # Control plane config (Talos)
-│   ├── worker.yaml           # Worker config (Talos)
+│   ├── controlplane.example.yaml # Sanitized CP template (real controlplane.yaml is generated + gitignored)
+│   ├── worker.example.yaml   # Sanitized worker template (real worker.yaml is generated + gitignored)
 │   ├── metallb-config.yaml   # MetalLB IP pool
 │   ├── ingress-config.yaml   # Ingress rules
 │   ├── prometheus-values.yaml # Monitoring stack config
