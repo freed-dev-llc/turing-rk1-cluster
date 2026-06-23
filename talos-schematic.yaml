@@ -5,5 +5,7 @@ customization:
   systemExtensions:
     officialExtensions:
       - siderolabs/iscsi-tools
+      # rockchip-rknn ships the mainline open 'rocket' NPU driver (Linux 6.18),
+      # not the proprietary rknpu; RKNN SDK / RKLLM remain K3s/Armbian-only.
       - siderolabs/rockchip-rknn
       - siderolabs/util-linux-tools

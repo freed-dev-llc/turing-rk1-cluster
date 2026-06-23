@@ -22,7 +22,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 
 | Distribution | Best For | NPU/GPU | Shell Access |
 |--------------|----------|---------|--------------|
-| **[Talos Linux](docs/INSTALLATION.md)** | Production, Security | No | API only |
+| **[Talos Linux](docs/INSTALLATION.md)** | Production, Security | Partial | API only |
 | **[K3s on Armbian](docs/INSTALLATION-K3S.md)** | Development, AI/ML | **Yes** | SSH |
 
 See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
@@ -101,7 +101,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 | Component | Version | Notes |
 |-----------|---------|-------|
 | Talos Linux | v1.13.5 | Immutable, API-driven Kubernetes OS |
-| Linux Kernel | 6.12.62 | Mainline kernel (ARM64) |
+| Linux Kernel | 6.18.36 | Mainline kernel (ARM64) |
 
 ### Kubernetes Components
 
@@ -199,28 +199,32 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 
 ## Limitations & Known Issues
 
-### NPU Not Available (Talos Only)
+### NPU: Partial on Talos, Full on K3s
 
-| Issue | Status | Details |
+| Capability | Status | Details |
 |-------|--------|---------|
-| RK3588 NPU inaccessible | **Talos: Not Supported** | Talos uses mainline Linux kernel which lacks Rockchip's proprietary RKNPU driver |
-| | **K3s/Armbian: Supported** | BSP kernel includes full NPU support |
+| RK3588 NPU driver | **Talos: Partial** | The mainline open-source `rocket` driver loads via the contrib `siderolabs/rockchip-rknn` extension (Talos 1.13 / Linux 6.18), exposing `/dev/accel/accel0` |
+| RKNN SDK / RKLLM | **Talos: Not supported** | `librknnrt` / `rknn-toolkit2` / RKLLM require Rockchip's proprietary `rknpu` BSP driver, which is *not* the mainline `rocket` driver |
+| Either NPU stack | **K3s/Armbian: Supported** | BSP kernel + RKNN SDK provide full NPU support, including LLMs |
 
-**Impact:** On Talos, the 6 TOPS NPU in each RK3588 cannot be used for hardware-accelerated AI inference.
+**Impact:** On Talos the NPU driver is now available, but only the open Mesa **Teflon** (TFLite) path works - limited to MobileNet-class CNNs, effectively single-core, and **no LLM (RKLLM) support**. The full RKNN/RKLLM stack this repo vendors (`repo/rknn-llm`, `repo/rknn-toolkit2`) runs on the **K3s/Armbian** path only.
 
 **Solutions:**
-1. **Use K3s on Armbian** - Full NPU support with RKNN SDK (see [docs/INSTALLATION-K3S.md](docs/INSTALLATION-K3S.md))
-2. Use CPU-based inference on Talos (ONNX Runtime, TensorFlow Lite)
-3. Wait for mainline NPU driver (in kernel review)
+1. **Run RKNN/RKLLM workloads on K3s on Armbian** - full NPU support with the RKNN SDK (see [docs/INSTALLATION-K3S.md](docs/INSTALLATION-K3S.md))
+2. **On Talos**, use the open `rocket`/Teflon path for small CNNs, or CPU-based inference (ONNX Runtime, TensorFlow Lite)
 
-### GPU Not Available (Talos Only)
+> **Note:** the `rocket` driver only binds if the RK1 device tree enables the NPU node - verify on hardware with `ls /dev/accel/` and `dmesg | grep -i rocket` after applying the extension.
 
-| Issue | Status | Details |
+### GPU: Partial on Talos, Full on K3s
+
+| Capability | Status | Details |
 |-------|--------|---------|
-| Mali-G610 GPU inaccessible | **Talos: Not Supported** | No GPU driver/passthrough in Talos |
-| | **K3s/Armbian: Supported** | OpenCL and Vulkan available |
+| Mali-G610 GPU driver | **Talos: Partial** | The `panthor` driver loads via the contrib `siderolabs/panfrost` extension (OpenGL ES / Vulkan); no proprietary Mali blob, limited OpenCL, no device plugin |
+| | **K3s/Armbian: Supported** | BSP userspace provides OpenCL and Vulkan |
 
-**Impact:** On Talos, no GPU acceleration for graphics or compute workloads. K3s on Armbian provides full GPU support.
+**Impact:** On Talos the open `panthor` driver enables OpenGL ES/Vulkan, but not the proprietary OpenCL stack. K3s on Armbian provides full GPU support.
+
+> **Note:** the RK3588 GPU and NPU are integrated SoC blocks - PCIe/VFIO "passthrough" does not apply. The model is a host-kernel driver plus exposing `/dev/dri/renderD128` (GPU) or `/dev/accel/accel0` (NPU) into a container (CDI is enabled by default in Talos 1.13).
 
 ### Storage Limitations
 

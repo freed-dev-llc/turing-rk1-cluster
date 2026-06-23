@@ -51,8 +51,8 @@ This document provides a comprehensive comparison between the two Kubernetes dis
 | **RAM** | Full support | Full support |
 | **eMMC Boot** | Supported | Supported |
 | **NVMe Storage** | Supported | Supported |
-| **NPU (6 TOPS)** | Not available | **Supported** |
-| **GPU (Mali-G610)** | Not available | **Supported** |
+| **NPU (6 TOPS)** | Partial (open `rocket` driver) | **Supported** |
+| **GPU (Mali-G610)** | Partial (`panthor` driver) | **Supported** |
 | **Hardware Video Decode** | Not available | **Supported** |
 
 ### NPU/AI Hardware Access
@@ -61,10 +61,12 @@ This document provides a comprehensive comparison between the two Kubernetes dis
 |------------|-------------|----------------|
 | **RKNN Runtime** | Not supported | **Full support** |
 | **RKLLM (LLM inference)** | Not supported | **Full support** |
-| **6 TOPS INT8** | Not available | **Available** |
+| **6 TOPS INT8** | Partial (CNNs via Mesa Teflon) | **Available** |
 | **Model Conversion** | Not supported | **Supported** |
 | **Hardware Video Encode** | Not available | **Supported** |
-| **OpenCL** | Not available | **Supported** |
+| **OpenCL** | Limited (Mesa rusticl, experimental) | **Supported** |
+
+> On Talos, the NPU/GPU **drivers** are available (open `rocket` / `panthor` via contrib extensions), but the proprietary **RKNN/RKLLM SDK** and **OpenCL blob** are not - those remain exclusive to the K3s/Armbian BSP. See the README "Limitations" section for details.
 
 ### Management
 

@@ -332,8 +332,13 @@ kubectl patch storageclass longhorn -p '{"metadata": {"annotations":{"storagecla
 
 ### Current State
 
-The RK3588 NPU requires:
-1. **Kernel driver** (`rknpu` module) - Must be compiled into/loaded by the kernel
+The RK3588 NPU has two distinct, incompatible driver stacks:
+
+- **Proprietary `rknpu` + RKNN SDK** (this repo's `repo/rknn-toolkit2`, `repo/rknn-llm`) - the full stack incl. RKLLM. Requires the BSP kernel, so **K3s/Armbian only** (not available on Talos).
+- **Mainline open `rocket` driver** (Linux 6.18) - loadable on Talos via the contrib `siderolabs/rockchip-rknn` extension (already in `talos-schematic.yaml`), exposing `/dev/accel/accel0`. Userspace is Mesa Teflon (TFLite) - small CNNs only, **no RKLLM**.
+
+For the RKNN/RKLLM workloads below (the proprietary stack), you need:
+1. **Kernel driver** (`rknpu` module) - BSP kernel (K3s/Armbian)
 2. **Runtime libraries** (`librknnrt.so`) - Available in `repo/rknn-toolkit2/`
 3. **Kubernetes device plugin** - For NPU scheduling
 
