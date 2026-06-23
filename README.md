@@ -18,6 +18,20 @@
 
 A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supporting both **Talos Linux** and **K3s on Armbian** distributions. Designed for edge computing, AI/ML workloads with NPU acceleration, and distributed storage.
 
+## Contents
+
+- [Choose Your Distribution](#choose-your-distribution)
+- [Documentation Map](#documentation-map)
+- [Hardware](#hardware)
+- [Software Stack](#software-stack)
+- [Access & Networking](#access--networking)
+- [Limitations & Known Issues](#limitations--known-issues)
+- [Directory Structure](#directory-structure)
+- [Security Notes](#security-notes)
+- [Contributing](#contributing) · [License](#license)
+
+---
+
 ## Choose Your Distribution
 
 | Distribution | Best For | NPU/GPU | Shell Access |
@@ -25,7 +39,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 | **[Talos Linux](docs/INSTALLATION.md)** | Production, Security | Partial | API only |
 | **[K3s on Armbian](docs/INSTALLATION-K3S.md)** | Development, AI/ML | **Yes** | SSH |
 
-See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
+See [docs/COMPARISON.md](docs/COMPARISON.md) for a detailed feature comparison.
 
 ### Quick Start
 
@@ -44,156 +58,182 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 
 > **Note**: This project is under active development. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
 
-## Hardware Summary
+---
 
-### Turing Pi 2 Board
+## Documentation Map
+
+### Primary Documentation
+
+| Document | Path | Description |
+|----------|------|-------------|
+| Docs Index | [docs/README.md](docs/README.md) | Documentation overview |
+| **Talos Installation** | [docs/INSTALLATION.md](docs/INSTALLATION.md) | Talos Linux setup guide |
+| **K3s Installation** | [docs/INSTALLATION-K3S.md](docs/INSTALLATION-K3S.md) | K3s on Armbian setup guide |
+| **Distribution Comparison** | [docs/COMPARISON.md](docs/COMPARISON.md) | Talos vs K3s feature matrix |
+| Architecture Diagrams | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Visual cluster architecture (Mermaid) |
+| Storage Guide | [docs/STORAGE.md](docs/STORAGE.md) | Longhorn and NVMe configuration |
+| Networking Guide | [docs/NETWORKING.md](docs/NETWORKING.md) | MetalLB and Ingress setup |
+| Monitoring Guide | [docs/MONITORING.md](docs/MONITORING.md) | Prometheus, Grafana & external monitoring |
+| Quick Reference | [docs/QUICKREF.md](docs/QUICKREF.md) | Command cheatsheet |
+
+### Configuration Files
+
+| File | Path | Description |
+|------|------|-------------|
+| Talos Config | [cluster-config/talosconfig](cluster-config/talosconfig) | Talos CLI configuration |
+| Kubeconfig | [cluster-config/kubeconfig](cluster-config/kubeconfig) | Kubernetes access |
+| Cluster Secrets | [cluster-config/secrets.yaml](cluster-config/secrets.yaml) | **Keep secure!** |
+| MetalLB Config | [cluster-config/metallb-config.yaml](cluster-config/metallb-config.yaml) | IP pool configuration |
+| Ingress Config | [cluster-config/ingress-config.yaml](cluster-config/ingress-config.yaml) | Ingress rules |
+| Portainer Agent | [cluster-config/portainer-agent.yaml](cluster-config/portainer-agent.yaml) | Agent deployment |
+| Prometheus Values | [cluster-config/prometheus-values.yaml](cluster-config/prometheus-values.yaml) | Monitoring stack config |
+| External Scrape | [cluster-config/external-scrape-config.yaml](cluster-config/external-scrape-config.yaml) | Docker host monitoring |
+
+### Reference Documentation
+
+| Document | Path | Description |
+|----------|------|-------------|
+| Cluster Plan | [CLUSTER_PLAN.md](CLUSTER_PLAN.md) | Original deployment plan |
+| Talos Schematic | [talos-schematic.yaml](talos-schematic.yaml) | Custom image configuration |
+
+### External Resources
+
+| Resource | URL |
+|----------|-----|
+| Talos Documentation | https://www.talos.dev/docs/ |
+| K3s Documentation | https://docs.k3s.io/ |
+| Longhorn Documentation | https://longhorn.io/docs/ |
+| Turing Pi Documentation | https://docs.turingpi.com/ |
+| MetalLB Documentation | https://metallb.io/ |
+| NGINX Ingress | https://kubernetes.github.io/ingress-nginx/ |
+| Prometheus Documentation | https://prometheus.io/docs/ |
+| Grafana Documentation | https://grafana.com/docs/ |
+| RKNN SDK (NPU) | https://github.com/airockchip/rknn-toolkit2 |
+| RKLLM (LLM inference) | https://github.com/airockchip/rknn-llm |
+
+---
+
+## Hardware
+
+### Specifications
 
 | Component | Specification |
 |-----------|---------------|
-| Form Factor | Mini-ITX |
-| Node Slots | 4x CM4/RK1 compatible |
-| BMC | Integrated management controller |
-| Networking | Gigabit Ethernet per node |
-| Storage | NVMe slot per node |
+| Board | Turing Pi 2 (Mini-ITX) — 4x CM4/RK1 slots, integrated BMC |
+| SoC (per node) | Rockchip RK3588 — 4x Cortex-A76 @ 2.4GHz + 4x Cortex-A55 @ 1.8GHz |
+| RAM (per node) | 32GB LPDDR4X |
+| GPU / NPU | Mali-G610 MP4 / 6 TOPS INT8 NPU — *see [Limitations](#limitations--known-issues)* |
+| Storage (per node) | 32GB eMMC (system) + 500GB Crucial P3 NVMe |
+| Network / Power (per node) | 1x 1Gbps Ethernet · ~10W draw |
 
-### Turing RK1 Compute Modules (x4)
-
-| Component | Specification |
-|-----------|---------------|
-| SoC | Rockchip RK3588 |
-| CPU | 4x Cortex-A76 @ 2.4GHz + 4x Cortex-A55 @ 1.8GHz |
-| RAM | 16GB / 32GB LPDDR4X |
-| GPU | Mali-G610 MP4 |
-| NPU | 6 TOPS (INT8) - *see limitations* |
-| eMMC | 32GB (system disk) |
-| NVMe | 500GB Crucial P3 (all 4 nodes) |
-
-### Cluster Topology
+### Topology & Totals
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Turing Pi 2 BMC                          │
-│                     10.10.88.70                             │
 ├─────────────┬─────────────┬─────────────┬───────────────────┤
 │   Node 1    │   Node 2    │   Node 3    │      Node 4       │
 │ Control Pl. │   Worker    │   Worker    │      Worker       │
-│ 10.10.88.73 │ 10.10.88.74 │ 10.10.88.75 │   10.10.88.76     │
-│ 32GB + 500GB│ 32GB + 500GB│ 32GB + 500GB│  32GB + 500GB     │
+│ 32GB · 500GB│ 32GB · 500GB│ 32GB · 500GB│  32GB · 500GB     │
 └─────────────┴─────────────┴─────────────┴───────────────────┘
 ```
 
-### Total Resources
-
-| Resource | Amount |
-|----------|--------|
-| CPU Cores | 32 (8 per node) |
-| RAM | 128GB (4x 32GB) |
-| Storage (eMMC) | 128GB |
-| Storage (NVMe) | 2TB (4x 500GB) |
-| Network | 4x 1Gbps |
+**Totals:** 32 CPU cores · 128GB RAM · 128GB eMMC · 2TB NVMe (4x 500GB) · 4x 1Gbps.
+The control plane is schedulable, so all 4 nodes run workloads and contribute NVMe to Longhorn.
+Suited to container orchestration, distributed storage, and CPU/NPU inference (~12 GFLOPS/node
+for matrix ops; full NPU acceleration on the K3s path). Node IPs are in
+[Access & Networking](#access--networking).
 
 ---
 
 ## Software Stack
 
-### Operating System
+> Components track the latest stable release unless a version is pinned below.
 
-| Component | Version | Notes |
-|-----------|---------|-------|
-| Talos Linux | v1.13.5 | Immutable, API-driven Kubernetes OS |
-| Linux Kernel | 6.18.36 | Mainline kernel (ARM64) |
-
-### Kubernetes Components
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Kubernetes | v1.35.0 | Container orchestration |
-| containerd | v2.1.5 | Container runtime |
-| etcd | Bundled | Distributed key-value store |
-
-### Storage
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Longhorn | Latest | Distributed block storage |
-| CSI Driver | Longhorn | Persistent volume provisioning |
-
-### Networking
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Flannel | Bundled | Pod networking (CNI) |
-| MetalLB | Latest | LoadBalancer for bare-metal |
-| NGINX Ingress | Latest | HTTP/HTTPS ingress controller |
-
-### Monitoring
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Prometheus | Latest | Metrics collection & alerting |
-| Grafana | Latest | Visualization & dashboards |
-| Alertmanager | Latest | Alert routing & management |
-| Node Exporter | Latest | Host-level metrics |
-| kube-state-metrics | Latest | Kubernetes state metrics |
-
-### Management
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Portainer Agent | v2.33.6 | Remote cluster management |
-| talosctl | v1.13.5 | Talos node management |
-| kubectl | v1.35.x | Kubernetes CLI |
-| Helm | v3.x | Package manager |
+| Layer | Components |
+|-------|-----------|
+| OS | Talos Linux **v1.13.5** (immutable, API-driven) · Linux kernel **6.18.36** (ARM64) |
+| Kubernetes | Kubernetes **v1.35.0** · containerd **v2.1.5** · etcd (bundled) |
+| Networking | Flannel CNI (bundled) · MetalLB (L2 LoadBalancer) · NGINX Ingress |
+| Storage | Longhorn — distributed block storage + CSI provisioning |
+| Monitoring | Prometheus · Grafana · Alertmanager · node-exporter · kube-state-metrics |
+| Management | talosctl **v1.13.5** · kubectl **v1.35.x** · Helm **v3.x** · Portainer Agent **v2.33.6** |
 
 ---
 
-## Cluster Capabilities
+## Access & Networking
 
-### What This Cluster Can Do
+### IP Allocation
 
-**Container Orchestration**
-- Run containerized workloads across 4 nodes
-- Automatic pod scheduling and load balancing
-- Rolling updates and rollbacks
-- Health monitoring and self-healing
+| Resource | IP Address | Port(s) |
+|----------|------------|---------|
+| BMC | 10.10.88.70 | 22 (SSH) |
+| Control Plane | 10.10.88.73 | 6443 (API) |
+| Worker 1 | 10.10.88.74 | - |
+| Worker 2 | 10.10.88.75 | - |
+| Worker 3 | 10.10.88.76 | - |
+| Ingress Controller | 10.10.88.80 | 80, 443 |
+| Portainer Agent | 10.10.88.81 | 9001 |
+| Available Pool | 10.10.88.82-89 | - |
 
-**Distributed Storage**
-- ~2TB raw NVMe (4x 500GB) for distributed Longhorn storage
-- Volume replication across nodes (configurable 1-3 replicas)
-- Snapshots and backups
-- Dynamic volume provisioning
-- High-performance NVMe-backed storage class
+### Internal Networks
 
-**Networking**
-- LoadBalancer services via MetalLB (10.10.88.80-89)
-- HTTP/HTTPS ingress with NGINX
-- TLS termination
-- Path and host-based routing
+| Network | CIDR | Purpose |
+|---------|------|---------|
+| Pod Network | 10.244.0.0/16 | Container IPs |
+| Service Network | 10.96.0.0/12 | ClusterIP services |
 
-**Edge Computing**
-- Low-power ARM64 architecture (~10W per node)
-- Compact form factor (Mini-ITX)
-- Suitable for remote/edge deployments
+### Management URLs
 
-**Development & Testing**
-- Full Kubernetes API compatibility
-- Helm chart deployment
-- GitOps-ready
-- Multi-architecture image support (arm64)
+| Service | URL | Notes |
+|---------|-----|-------|
+| Kubernetes API | https://10.10.88.73:6443 | Use kubeconfig |
+| Grafana | http://grafana.local | Default: admin/admin |
+| Prometheus | http://prometheus.local | Metrics & queries |
+| Alertmanager | http://alertmanager.local | Alert management |
+| Longhorn UI | http://longhorn.local | Storage management |
+| Portainer | Your Portainer instance | Connect agent: `10.10.88.81:9001` |
 
-**AI/ML Workloads (CPU)**
-- ARM64-optimized inference
-- NumPy, ONNX Runtime, PyTorch (CPU)
-- ~12 GFLOPS matrix operations per node
-- Distributed training/inference across nodes
+Add to `/etc/hosts`:
+```
+10.10.88.80  grafana.local prometheus.local alertmanager.local longhorn.local
+```
 
-**Monitoring & Observability**
-- Full cluster metrics via Prometheus
-- Pre-configured Grafana dashboards
-- Node, pod, and container-level monitoring
-- Alerting with Alertmanager
-- External Docker host monitoring support
-- Longhorn storage metrics integration
+### CLI Access
+
+```bash
+# Set environment variables
+export TALOSCONFIG=/path/to/cluster-config/talosconfig
+export KUBECONFIG=/path/to/cluster-config/kubeconfig
+
+# Verify cluster
+kubectl get nodes
+talosctl health
+```
+
+### BMC Setup
+
+The deployment scripts require access to the Turing Pi BMC. Configure credentials by copying the example file:
+
+```bash
+cp .env.example .env
+# Edit .env with your BMC credentials
+```
+
+Required variables in `.env`:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TPI_HOSTNAME` | BMC IP address | `10.10.88.70` |
+| `TPI_USERNAME` | BMC login username | - |
+| `TPI_PASSWORD` | BMC login password | - |
+| `USE_LOCAL_TPI` | Use local tpi CLI (1) or SSH to BMC (0) | `1` |
+
+Test BMC connectivity:
+
+```bash
+./scripts/wipe-cluster.sh status
+```
 
 ---
 
@@ -254,139 +294,6 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 |-------|--------|------------|
 | PodSecurity warnings on deploy | Expected | Label namespaces as privileged |
 | MetalLB speaker pods require privileges | Expected | Namespace is pre-labeled |
-
----
-
-## Network Configuration
-
-### IP Allocation
-
-| Resource | IP Address | Port(s) |
-|----------|------------|---------|
-| BMC | 10.10.88.70 | 22 (SSH) |
-| Control Plane | 10.10.88.73 | 6443 (API) |
-| Worker 1 | 10.10.88.74 | - |
-| Worker 2 | 10.10.88.75 | - |
-| Worker 3 | 10.10.88.76 | - |
-| Ingress Controller | 10.10.88.80 | 80, 443 |
-| Portainer Agent | 10.10.88.81 | 9001 |
-| Available Pool | 10.10.88.82-89 | - |
-
-### Internal Networks
-
-| Network | CIDR | Purpose |
-|---------|------|---------|
-| Pod Network | 10.244.0.0/16 | Container IPs |
-| Service Network | 10.96.0.0/12 | ClusterIP services |
-
----
-
-## Quick Access
-
-### Management URLs
-
-| Service | URL | Notes |
-|---------|-----|-------|
-| Kubernetes API | https://10.10.88.73:6443 | Use kubeconfig |
-| Grafana | http://grafana.local | Default: admin/admin |
-| Prometheus | http://prometheus.local | Metrics & queries |
-| Alertmanager | http://alertmanager.local | Alert management |
-| Longhorn UI | http://longhorn.local | Storage management |
-| Portainer | Your Portainer instance | Connect agent: `10.10.88.81:9001` |
-
-Add to `/etc/hosts`:
-```
-10.10.88.80  grafana.local prometheus.local alertmanager.local longhorn.local
-```
-
-### CLI Access
-
-```bash
-# Set environment variables
-export TALOSCONFIG=/path/to/cluster-config/talosconfig
-export KUBECONFIG=/path/to/cluster-config/kubeconfig
-
-# Verify cluster
-kubectl get nodes
-talosctl health
-```
-
-### BMC Access Setup
-
-The deployment scripts require access to the Turing Pi BMC. Configure credentials by copying the example file:
-
-```bash
-cp .env.example .env
-# Edit .env with your BMC credentials
-```
-
-Required variables in `.env`:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TPI_HOSTNAME` | BMC IP address | `10.10.88.70` |
-| `TPI_USERNAME` | BMC login username | - |
-| `TPI_PASSWORD` | BMC login password | - |
-| `USE_LOCAL_TPI` | Use local tpi CLI (1) or SSH to BMC (0) | `1` |
-
-Test BMC connectivity:
-
-```bash
-./scripts/wipe-cluster.sh status
-```
-
----
-
-## Documentation Map
-
-### Primary Documentation
-
-| Document | Path | Description |
-|----------|------|-------------|
-| Docs Index | [docs/README.md](docs/README.md) | Documentation overview |
-| **Talos Installation** | [docs/INSTALLATION.md](docs/INSTALLATION.md) | Talos Linux setup guide |
-| **K3s Installation** | [docs/INSTALLATION-K3S.md](docs/INSTALLATION-K3S.md) | K3s on Armbian setup guide |
-| **Distribution Comparison** | [docs/COMPARISON.md](docs/COMPARISON.md) | Talos vs K3s feature matrix |
-| Architecture Diagrams | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Visual cluster architecture (Mermaid) |
-| Storage Guide | [docs/STORAGE.md](docs/STORAGE.md) | Longhorn and NVMe configuration |
-| Networking Guide | [docs/NETWORKING.md](docs/NETWORKING.md) | MetalLB and Ingress setup |
-| Monitoring Guide | [docs/MONITORING.md](docs/MONITORING.md) | Prometheus, Grafana & external monitoring |
-| Quick Reference | [docs/QUICKREF.md](docs/QUICKREF.md) | Command cheatsheet |
-
-### Configuration Files
-
-| File | Path | Description |
-|------|------|-------------|
-| Talos Config | [cluster-config/talosconfig](cluster-config/talosconfig) | Talos CLI configuration |
-| Kubeconfig | [cluster-config/kubeconfig](cluster-config/kubeconfig) | Kubernetes access |
-| Cluster Secrets | [cluster-config/secrets.yaml](cluster-config/secrets.yaml) | **Keep secure!** |
-| MetalLB Config | [cluster-config/metallb-config.yaml](cluster-config/metallb-config.yaml) | IP pool configuration |
-| Ingress Config | [cluster-config/ingress-config.yaml](cluster-config/ingress-config.yaml) | Ingress rules |
-| Portainer Agent | [cluster-config/portainer-agent.yaml](cluster-config/portainer-agent.yaml) | Agent deployment |
-| Prometheus Values | [cluster-config/prometheus-values.yaml](cluster-config/prometheus-values.yaml) | Monitoring stack config |
-| External Scrape | [cluster-config/external-scrape-config.yaml](cluster-config/external-scrape-config.yaml) | Docker host monitoring |
-
-### Reference Documentation
-
-| Document | Path | Description |
-|----------|------|-------------|
-| Cluster Plan | [CLUSTER_PLAN.md](CLUSTER_PLAN.md) | Original deployment plan |
-| Talos Schematic | [talos-schematic.yaml](talos-schematic.yaml) | Custom image configuration |
-
-### External Resources
-
-| Resource | URL |
-|----------|-----|
-| Talos Documentation | https://www.talos.dev/docs/ |
-| K3s Documentation | https://docs.k3s.io/ |
-| Longhorn Documentation | https://longhorn.io/docs/ |
-| Turing Pi Documentation | https://docs.turingpi.com/ |
-| MetalLB Documentation | https://metallb.io/ |
-| NGINX Ingress | https://kubernetes.github.io/ingress-nginx/ |
-| Prometheus Documentation | https://prometheus.io/docs/ |
-| Grafana Documentation | https://grafana.com/docs/ |
-| RKNN SDK (NPU) | https://github.com/airockchip/rknn-toolkit2 |
-| RKLLM (LLM inference) | https://github.com/airockchip/rknn-llm |
 
 ---
 
