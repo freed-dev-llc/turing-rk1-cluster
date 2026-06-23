@@ -17,8 +17,8 @@ Choose your preferred Kubernetes distribution:
 |---------|-------|----------------|
 | Shell Access | No (API only) | Yes (SSH) |
 | Security | Hardened by default | Manual hardening |
-| **NPU (6 TOPS)** | Not available | **Supported** |
-| **GPU (Mali-G610)** | Not available | **Supported** |
+| **NPU (6 TOPS)** | Partial (open `rocket` driver; no RKLLM) | **Supported** |
+| **GPU (Mali-G610)** | Partial (`panthor` driver) | **Supported** |
 | Debugging | talosctl | Standard Linux |
 | Updates | Atomic | apt + reinstall |
 | Learning Curve | Steeper | Gentler |

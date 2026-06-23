@@ -291,8 +291,8 @@ flowchart TB
     subgraph RK1["Turing RK1 Module (x4)"]
         subgraph SoC["Rockchip RK3588"]
             CPU["CPU<br/>4x A76 @ 2.4GHz<br/>4x A55 @ 1.8GHz"]
-            GPU["GPU<br/>Mali-G610 MP4<br/>(Not Available)"]
-            NPU["NPU<br/>6 TOPS INT8<br/>(Not Available)"]
+            GPU["GPU<br/>Mali-G610 MP4<br/>(Talos: partial / K3s: full)"]
+            NPU["NPU<br/>6 TOPS INT8<br/>(Talos: partial / K3s: full)"]
         end
 
         RAM["RAM<br/>16GB/32GB<br/>LPDDR4X"]

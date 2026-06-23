@@ -118,7 +118,7 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 - RAM: 16GB or 32GB
 - eMMC: 32GB (system disk - /dev/mmcblk0)
 - NVMe: 500GB Crucial P3 (data disk - /dev/nvme0n1)
-- NPU: 6 TOPS (not currently supported in Talos)
+- NPU: 6 TOPS (3-core) - partial on Talos via the mainline open `rocket` driver (`siderolabs/rockchip-rknn` extension, small CNNs only); the full RKNN/RKLLM SDK is K3s/Armbian-only
 
 ---
 
