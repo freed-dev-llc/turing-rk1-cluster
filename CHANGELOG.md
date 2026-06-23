@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot config now ignores the `repo/u-boot-rockchip` submodule (updater crashes upstream) (#22).
 - README badges + INSTALLATION docs updated for the `jfreed-dev` → `freed-dev-llc` org migration (#23, #25).
 - INSTALLATION docs: Talos version bumped from v1.11.6 to v1.13.2 (#25, completed in #27 + this PR which caught references in CLUSTER_PLAN.md / QUICKREF.md / scripts/deploy-talos-cluster.sh / cluster-config/*.yaml that #25 missed).
-- **Cluster machineconfig** (`cluster-config/*.yaml`, 8 files): bumped `installer:v1.11.6` → `v1.13.2` and all Kubernetes component images (kubelet, kube-apiserver, kube-controller-manager, kube-proxy, kube-scheduler) from v1.34.1 → v1.35.0 to match the Kubernetes version Talos v1.13.2 actually ships. Applying these configs via `talosctl apply-config` will upgrade nodes to Talos v1.13.2 + K8s v1.35.0.
+- **Cluster machineconfig** (`cluster-config/*.yaml`, 8 files): bumped `installer:v1.11.6` → `v1.13.2` and all Kubernetes component images (kubelet, kube-apiserver, kube-controller-manager, kube-proxy, kube-scheduler) from v1.34.1 → v1.35.0 to match the Kubernetes version Talos v1.13.2 actually ships. These configs are applied via `talosctl apply-config` on fresh deploys; upgrading an existing cluster instead requires `talosctl upgrade` (OS) + `talosctl upgrade-k8s` (Kubernetes), since `apply-config` alone does not reinstall the OS.
 - **Deploy script** (`scripts/deploy-talos-cluster.sh`): `TALOS_VERSION` default bumped from v1.11.6 to v1.13.2 so fresh deploys pull the matching image from the Factory.
 - README badges + INSTALLATION/COMPARISON Kubernetes version: v1.34.1 → v1.35.0 (matches what Talos v1.13.2 ships, per Talos Factory's `kubernetes_version` field in the manifest).
 - MetalLB pool range reconciled to ground-truth `10.10.88.80-89` across all docs (was inconsistent: `80-89` in 4 places, `80-99` in 4) (#23).
@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Talos `v1.13.2` → `v1.13.5`** (`cluster-config/*.yaml` 8 installer images, `scripts/deploy-talos-cluster.sh`, plus README / INSTALLATION / QUICKREF / CLUSTER_PLAN references): Talos v1.13.2 crash-loops `kube-scheduler` when running Kubernetes v1.35 — it renders the Kubernetes 1.36-only scheduler plugin extension points (`placementGenerate` / `placementScore`) into the generated scheduler config, which the v1.35 scheduler rejects with a strict-decoding error ([siderolabs/talos#13350](https://github.com/siderolabs/talos/issues/13350)). Fixed upstream in v1.13.3; pinned to the latest v1.13 patch, `v1.13.5`. Kubernetes stays at `v1.35.0` (within Talos v1.13's supported 1.31–1.36 range).
+- `CLUSTER_PLAN.md` `kubectl get nodes` example output still showed Kubernetes `v1.34.x`; bumped to `v1.35.x` to match the `v1.35.0` bump applied across the other docs.
 - License badge: MIT → Apache 2.0 to match the actual `LICENSE` file (#25).
 - `docs/INSTALLATION.md` ingress-nginx URL was pinned to `v1.12.0-beta.0`; bumped to `v1.13.3` GA (#24).
 - `~/Code/turing-rk1-cluster` hardcoded paths in `CLUSTER_PLAN.md` and `docs/QUICKREF.md` generalized to `$REPO_ROOT` (#24).

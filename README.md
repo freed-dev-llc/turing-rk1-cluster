@@ -6,7 +6,7 @@
 [![Lint](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/lint.yml)
 [![CodeQL](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Talos](https://img.shields.io/badge/Talos-v1.13.2-blue)](https://www.talos.dev/)
+[![Talos](https://img.shields.io/badge/Talos-v1.13.5-blue)](https://www.talos.dev/)
 [![K3s](https://img.shields.io/badge/K3s-v1.31-FFC61C)](https://k3s.io/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35.0-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 
@@ -100,7 +100,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 
 | Component | Version | Notes |
 |-----------|---------|-------|
-| Talos Linux | v1.13.2 | Immutable, API-driven Kubernetes OS |
+| Talos Linux | v1.13.5 | Immutable, API-driven Kubernetes OS |
 | Linux Kernel | 6.12.62 | Mainline kernel (ARM64) |
 
 ### Kubernetes Components
@@ -141,7 +141,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 | Component | Version | Purpose |
 |-----------|---------|---------|
 | Portainer Agent | v2.33.6 | Remote cluster management |
-| talosctl | v1.13.2 | Talos node management |
+| talosctl | v1.13.5 | Talos node management |
 | kubectl | v1.35.x | Kubernetes CLI |
 | Helm | v3.x | Package manager |
 
