@@ -10,23 +10,23 @@
 [![K3s](https://img.shields.io/badge/K3s-stable_channel-FFC61C)](https://k3s.io/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35.0-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 
-**Related Turing Pi projects:**
+> **Part of the Turing Pi cluster stack:** the **provider** drives the Turing Pi BMC, the **modules** wrap it into reusable Terraform, and the cluster repos deploy Kubernetes on top — **Talos** (this repo) or **K3s**.
 
+[![Terraform Provider — freed-dev-llc/terraform-provider-turingpi](docs/assets/buttons/btn_terraform_provider_turingpi.svg)](https://github.com/freed-dev-llc/terraform-provider-turingpi)
+[![Terraform Modules — freed-dev-llc/terraform-turingpi-modules](docs/assets/buttons/btn_terraform_turingpi_modules.svg)](https://github.com/freed-dev-llc/terraform-turingpi-modules)
 [![Turing RK1 Ansible — freed-dev-llc/turing-ansible-cluster](docs/assets/buttons/btn_turing_ansible_cluster.svg)](https://github.com/freed-dev-llc/turing-ansible-cluster)
-[![Turing Pi Provider — freed-dev-llc/terraform-provider-turingpi](docs/assets/buttons/btn_terraform_provider_turingpi.svg)](https://github.com/freed-dev-llc/terraform-provider-turingpi)
-[![Turing Pi Modules — freed-dev-llc/terraform-turingpi-modules](docs/assets/buttons/btn_terraform_turingpi_modules.svg)](https://github.com/freed-dev-llc/terraform-turingpi-modules)
 
 A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supporting both **Talos Linux** and **K3s on Armbian** distributions. Designed for edge computing, AI/ML workloads with NPU acceleration, and distributed storage.
 
 ## Contents
 
 - [Choose Your Distribution](#choose-your-distribution)
-- [Documentation Map](#documentation-map)
+- [Documentation](#documentation)
 - [Hardware](#hardware)
 - [Software Stack](#software-stack)
 - [Access & Networking](#access--networking)
 - [Limitations & Known Issues](#limitations--known-issues)
-- [Directory Structure](#directory-structure)
+- [Repository Structure](#repository-structure)
 - [Security Notes](#security-notes)
 - [Contributing](#contributing) · [License](#license)
 
@@ -60,7 +60,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for a detailed feature comparison.
 
 ---
 
-## Documentation Map
+## Documentation
 
 ### Primary Documentation
 
@@ -297,7 +297,7 @@ Test BMC connectivity:
 
 ---
 
-## Directory Structure
+## Repository Structure
 
 ```
 turing-rk1-cluster/
