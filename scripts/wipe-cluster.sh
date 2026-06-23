@@ -23,11 +23,11 @@ if [[ -f "${PROJECT_DIR}/.env" ]]; then
 fi
 
 # BMC Configuration
-BMC_IP="${BMC_IP:-10.10.88.70}"
+BMC_HOST="${BMC_HOST:-10.10.88.70}"
 BMC_USER="${BMC_USER:-root}"
 
 # TPI CLI Configuration (for local tpi commands)
-export TPI_HOSTNAME="${TPI_HOSTNAME:-$BMC_IP}"
+export TPI_HOSTNAME="${TPI_HOSTNAME:-$BMC_HOST}"
 # TPI_USERNAME and TPI_PASSWORD should be set in environment if needed
 
 # Node Configuration
@@ -230,7 +230,7 @@ wipe_nvme_ssh() {
 
     log_info "Wiping NVMe on node $node_num ($ip)..."
 
-    ssh -o ConnectTimeout=10 "$SSH_USER@$ip" "
+    if ssh -o ConnectTimeout=10 "$SSH_USER@$ip" "
         set -e
         if [ -b $NVME_DEVICE ]; then
             # Unmount any mounted partitions
@@ -261,8 +261,7 @@ wipe_nvme_ssh() {
         else
             echo '  NVMe device not found, skipping'
         fi
-    " 2>/dev/null; local rc=$?
-    if [[ $rc -eq 0 ]]; then
+    " 2>/dev/null; then
         log_success "Node $node_num NVMe wiped"
     else
         log_warn "Node $node_num NVMe wipe may have failed"
@@ -275,7 +274,7 @@ wipe_emmc_ssh() {
 
     log_info "Wiping eMMC on node $node_num ($ip)..."
 
-    ssh -o ConnectTimeout=10 "$SSH_USER@$ip" "
+    if ssh -o ConnectTimeout=10 "$SSH_USER@$ip" "
         set -e
         if [ -b $EMMC_DEVICE ]; then
             echo '  WARNING: Wiping eMMC will remove the operating system!'
@@ -304,8 +303,7 @@ wipe_emmc_ssh() {
         else
             echo '  eMMC device not found, skipping'
         fi
-    " 2>/dev/null; local rc=$?
-    if [[ $rc -eq 0 ]]; then
+    " 2>/dev/null; then
         log_success "Node $node_num eMMC wiped"
     else
         log_warn "Node $node_num eMMC wipe may have failed"
@@ -324,6 +322,7 @@ wipe_talos_node() {
         --reboot=false \
         --system-labels-to-wipe STATE \
         --system-labels-to-wipe EPHEMERAL \
+        --user-disks-to-wipe "$NVME_DEVICE" \
         2>/dev/null; then
         log_success "Node $node_num Talos reset complete"
     else
@@ -371,15 +370,15 @@ cmd_status() {
 
     # BMC status
     print_section "BMC Status"
-    if check_reachable "$BMC_IP"; then
-        log_success "BMC ($BMC_IP) is reachable"
+    if check_reachable "$BMC_HOST"; then
+        log_success "BMC ($BMC_HOST) is reachable"
         if command -v tpi &>/dev/null; then
             echo ""
             echo "Power Status:"
             tpi power status 2>/dev/null || echo "  Unable to query"
         fi
     else
-        log_warn "BMC ($BMC_IP) is not reachable"
+        log_warn "BMC ($BMC_HOST) is not reachable"
     fi
 }
 
@@ -410,7 +409,7 @@ cmd_wipe_nvme() {
                 wipe_nvme_ssh "$ip" "$node_num"
                 ;;
             talos)
-                log_warn "Node $node_num: Use 'wipe talos' for Talos nodes (includes NVMe)"
+                log_warn "Node $node_num: Use 'wipe talos' for Talos nodes (resets system partitions + wipes NVMe)"
                 ;;
             talos-maintenance)
                 log_warn "Node $node_num in maintenance mode - reflash via BMC to wipe"
@@ -721,9 +720,9 @@ Storage Targets:
   emmc    /dev/mmcblk0  - eMMC flash (boot drive, OS)
 
 Environment Variables:
-  BMC_IP          BMC IP address (default: 10.10.88.70)
+  BMC_HOST          BMC IP address (default: 10.10.88.70)
   SSH_USER        SSH user for Armbian nodes (default: root)
-  TPI_HOSTNAME    TPI target host (default: BMC_IP)
+  TPI_HOSTNAME    TPI target host (default: BMC_HOST)
   TPI_USERNAME    TPI authentication username
   TPI_PASSWORD    TPI authentication password
 

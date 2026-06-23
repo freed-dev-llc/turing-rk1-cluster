@@ -2,7 +2,7 @@
 # Deploy K3s Cluster to Turing RK1 nodes
 # Run from workstation with SSH access to all nodes
 
-set -e
+set -euo pipefail
 
 # Node configuration
 SERVER_IP="10.10.88.73"
@@ -16,19 +16,31 @@ echo ""
 
 # Install K3s Server
 echo "[1/4] Installing K3s Server on $SERVER_IP..."
-ssh "$SSH_USER@$SERVER_IP" << 'REMOTE_SCRIPT'
+# shellcheck disable=SC2087 # $SERVER_IP intentionally expanded client-side for --tls-san
+ssh "$SSH_USER@$SERVER_IP" << REMOTE_SCRIPT
+set -eo pipefail
 curl -sfL https://get.k3s.io | sh -s - server \
   --cluster-init \
   --disable=traefik \
   --disable=servicelb \
   --write-kubeconfig-mode=644 \
-  --tls-san=10.10.88.73 \
+  --tls-san=$SERVER_IP \
   --node-name=k3s-server \
   --flannel-backend=vxlan
 REMOTE_SCRIPT
 
-echo "Waiting for server to be ready..."
-sleep 30
+echo "Waiting for K3s server to be ready (node-token + API)..."
+for attempt in $(seq 1 60); do
+  if ssh "$SSH_USER@$SERVER_IP" "test -s /var/lib/rancher/k3s/server/node-token && k3s kubectl get --raw='/readyz'" >/dev/null 2>&1; then
+    echo "Server ready (after $attempt checks)"
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo "ERROR: K3s server not ready after ~5 minutes" >&2
+    exit 1
+  fi
+  sleep 5
+done
 
 # Get token
 echo "[2/4] Getting node token..."
@@ -43,6 +55,7 @@ for i in "${!AGENT_IPS[@]}"; do
   echo "  Installing on $AGENT_IP ($AGENT_NAME)..."
   # shellcheck disable=SC2087 # Variables intentionally expanded client-side
   ssh "$SSH_USER@$AGENT_IP" << REMOTE_SCRIPT
+set -eo pipefail
 curl -sfL https://get.k3s.io | K3S_URL=https://$SERVER_IP:6443 K3S_TOKEN=$K3S_TOKEN sh -s - agent \
   --node-name=$AGENT_NAME
 REMOTE_SCRIPT

@@ -3,7 +3,9 @@
 # Turing RK1 Cluster Status Script
 # Detects cluster type (Talos or K3s) and provides health summary
 #
-set -euo pipefail
+# Status tool: do NOT use -e/pipefail — a single failing probe must not abort
+# the whole report (and `… | head` SIGPIPE under pipefail yields false negatives).
+set -u
 
 # =============================================================================
 # Configuration
@@ -74,6 +76,14 @@ detect_cluster_type() {
     # Check if control plane is reachable
     if ! check_reachable "$CONTROL_PLANE_IP"; then
         log_error "Control plane ($CONTROL_PLANE_IP) is not reachable"
+        log_warn "Node reachability (control plane down — limited info):"
+        for ip in "${ALL_NODE_IPS[@]}"; do
+            if check_reachable "$ip"; then
+                echo -e "  $ip: ${GREEN}reachable${NC}"
+            else
+                echo -e "  $ip: ${RED}unreachable${NC}"
+            fi
+        done
         exit 1
     fi
 
@@ -312,7 +322,7 @@ get_kubernetes_status() {
 
     # Recent events
     print_section "Recent Warning Events (last 10)"
-    kubectl get events -A --field-selector type=Warning --sort-by='.lastTimestamp' 2>/dev/null | tail -11 | head -10 || echo "  No warning events"
+    kubectl get events -A --field-selector type=Warning --sort-by='.lastTimestamp' --no-headers 2>/dev/null | tail -10 || echo "  No warning events"
 }
 
 # =============================================================================

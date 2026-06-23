@@ -751,7 +751,8 @@ reset_cluster() {
 
     # Clean up local configs
     log_info "Cleaning up local configuration..."
-    rm -f "$CONFIG_DIR"/{controlplane,worker}*.yaml
+    # Only remove generated artifacts — NOT hand-authored *-patch.yaml / *-simple.yaml / *.example.yaml
+    rm -f "$CONFIG_DIR"/controlplane.yaml "$CONFIG_DIR"/worker.yaml "$CONFIG_DIR"/*-patched.yaml
     rm -f "$CONFIG_DIR"/talosconfig
     rm -f "$CONFIG_DIR"/kubeconfig
     # Keep secrets.yaml for redeployment
