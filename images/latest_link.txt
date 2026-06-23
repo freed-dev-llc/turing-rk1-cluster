@@ -1,1 +1,1 @@
-https://factory.talos.dev/image/85f683902139269fbc5a7f64ea94a694d31e0b3d94347a225223fcbd042083ae/v1.11.6/metal-arm64.raw.xz
+https://factory.talos.dev/image/35d07e8c5e698ec18c7356eded0849b477585f45454d86a52b4e0b87e2e543ec/v1.13.5/metal-arm64.raw.xz

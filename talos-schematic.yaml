@@ -5,4 +5,5 @@ customization:
   systemExtensions:
     officialExtensions:
       - siderolabs/iscsi-tools
+      - siderolabs/rockchip-rknn
       - siderolabs/util-linux-tools
