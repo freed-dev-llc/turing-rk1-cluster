@@ -4,6 +4,7 @@ cluster-config/talosconfig
 cluster-config/secrets.yaml
 cluster-config/*-final.yaml
 cluster-config/*-generated.yaml
+cluster-config/*-patched.yaml
 cluster-config/controlplane-node[0-9].yaml
 *.key
 *.pem

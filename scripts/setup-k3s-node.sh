@@ -3,9 +3,9 @@
 # Usage: ./setup-k3s-node.sh <hostname>
 # Example: ./setup-k3s-node.sh k3s-server
 
-set -e
+set -euo pipefail
 
-HOSTNAME=${1:-$(hostname)}
+HOSTNAME="${1:-$(hostname)}"
 
 echo "=== Turing RK1 K3s Node Setup ==="
 echo "Hostname: $HOSTNAME"
@@ -64,19 +64,27 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 # Setup NVMe if present
 echo "[8/8] Setting up NVMe storage..."
 if [ -b /dev/nvme0n1 ]; then
-  if ! mount | grep -q "/var/lib/longhorn"; then
+  if findmnt /var/lib/longhorn >/dev/null 2>&1; then
+    echo "  NVMe already mounted at /var/lib/longhorn"
+  elif { blkid /dev/nvme0n1p1 >/dev/null 2>&1 || lsblk -nro FSTYPE /dev/nvme0n1 | grep -q .; } && [ "${FORCE_WIPE:-0}" != "1" ]; then
+    echo "  ERROR: /dev/nvme0n1 already contains a filesystem but is not mounted at /var/lib/longhorn." >&2
+    echo "  Refusing to format (would destroy existing data). Set FORCE_WIPE=1 to override." >&2
+    exit 1
+  else
     wipefs -a /dev/nvme0n1 2>/dev/null || true
     parted /dev/nvme0n1 --script mklabel gpt
     parted /dev/nvme0n1 --script mkpart primary xfs 0% 100%
-    sleep 2
+    partprobe /dev/nvme0n1
+    udevadm settle
     mkfs.xfs -f /dev/nvme0n1p1
     mkdir -p /var/lib/longhorn
     UUID=$(blkid -s UUID -o value /dev/nvme0n1p1)
-    echo "UUID=$UUID /var/lib/longhorn xfs defaults,noatime 0 2" >> /etc/fstab
+    [ -n "$UUID" ] || { echo "  ERROR: could not read UUID of /dev/nvme0n1p1" >&2; exit 1; }
+    if ! grep -q " /var/lib/longhorn " /etc/fstab; then
+      echo "UUID=$UUID /var/lib/longhorn xfs defaults,noatime,nofail,x-systemd.device-timeout=10 0 0" >> /etc/fstab
+    fi
     mount -a
     echo "  NVMe mounted at /var/lib/longhorn"
-  else
-    echo "  NVMe already mounted"
   fi
 else
   echo "  No NVMe detected"
