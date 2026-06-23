@@ -316,8 +316,10 @@ wipe_talos_node() {
 
     log_info "Resetting Talos node $node_num ($ip)..."
 
-    # Use talosctl reset to wipe the node
-    if talosctl --nodes "$ip" reset \
+    # Use talosctl reset to wipe the node. Target the node's OWN endpoint so the
+    # reset does not proxy through the control-plane endpoint (which is itself being
+    # reset in this loop) — otherwise worker resets fail once the CP is gone.
+    if talosctl --nodes "$ip" --endpoints "$ip" reset \
         --graceful=false \
         --reboot=false \
         --system-labels-to-wipe STATE \
