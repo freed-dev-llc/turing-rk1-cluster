@@ -1,6 +1,5 @@
 machine:
   network:
-    hostname: turing-w3
     interfaces:
       - interface: eth0
         dhcp: true

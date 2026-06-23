@@ -23,6 +23,11 @@ fi
 IMAGE_DIR="${PROJECT_DIR}/images/latest"
 TALOS_IMAGE="${IMAGE_DIR}/metal-arm64.raw"
 TALOS_VERSION="v1.13.5"
+K8S_VERSION="${K8S_VERSION:-v1.35.0}"
+# Factory schematic ID for the RK1 image (sbc-rockchip overlay + rockchip-rknn NPU +
+# iscsi-tools + util-linux-tools). Used as the install image so the board overlay and
+# extensions survive `talosctl upgrade` (the plain ghcr installer would drop them).
+SCHEMATIC_ID="${SCHEMATIC_ID:-35d07e8c5e698ec18c7356eded0849b477585f45454d86a52b4e0b87e2e543ec}"
 
 # Network configuration
 BMC_HOST="${BMC_HOST:-10.10.88.70}"
@@ -101,10 +106,18 @@ wait_for_node() {
 wait_for_talos_api() {
     local ip=$1
     local timeout=${2:-$BOOT_TIMEOUT}
+    # mode: "insecure" = maintenance mode (pre-config); "secure" = configured node
+    # (e.g. before bootstrap — a configured node no longer serves the insecure API).
+    local mode=${3:-insecure}
     local elapsed=0
 
-    log_info "Waiting for Talos API on $ip (timeout: ${timeout}s)..."
-    while ! talosctl --nodes "$ip" version --insecure &>/dev/null 2>&1; do
+    log_info "Waiting for Talos API on $ip ($mode, timeout: ${timeout}s)..."
+    while true; do
+        if [ "$mode" = "secure" ]; then
+            talosctl --nodes "$ip" version &>/dev/null && break
+        else
+            talosctl --nodes "$ip" version --insecure &>/dev/null && break
+        fi
         sleep 5
         elapsed=$((elapsed + 5))
         if [ "$elapsed" -ge "$timeout" ]; then
@@ -302,7 +315,9 @@ flash_nodes() {
     fi
 
     # Check image on BMC or copy it
-    local bmc_image_path="/tmp/metal-arm64.raw"
+    # The Turing Pi 2 BMC's /tmp is a tiny tmpfs (~58MB) — far too small for the ~2.2GB
+    # image. Stage it on the microSD (/mnt/sdcard) instead. Override with BMC_IMAGE_PATH.
+    local bmc_image_path="${BMC_IMAGE_PATH:-/mnt/sdcard/metal-arm64.raw}"
 
     log_info "The image needs to be accessible from the BMC."
     echo "Options:"
@@ -396,6 +411,8 @@ generate_configs() {
         "$CLUSTER_NAME" \
         "$KUBERNETES_ENDPOINT" \
         --install-disk /dev/mmcblk0 \
+        --install-image "factory.talos.dev/installer/${SCHEMATIC_ID}:${TALOS_VERSION}" \
+        --kubernetes-version "$K8S_VERSION" \
         --output-dir . \
         --force
 
@@ -422,7 +439,8 @@ create_worker_patches() {
             cat > "$patch_file" << EOF
 machine:
   network:
-    hostname: turing-w${worker_num}
+    # Do not set machine.network.hostname on Talos v1.13 — it conflicts with the
+    # HostnameConfig document and fails validation. Hostname stays auto (stable).
     interfaces:
       - interface: eth0
         dhcp: true
@@ -560,30 +578,40 @@ bootstrap_cluster() {
 
     setup_talosctl
 
-    # Wait for control plane to be ready
+    # Wait for the control plane's SECURE API. After apply-config the node leaves
+    # maintenance mode and no longer answers the insecure API, so an --insecure probe
+    # would loop until timeout.
     log_info "Waiting for control plane Talos API..."
-    wait_for_talos_api "$CONTROL_PLANE_IP" 300 || {
+    wait_for_talos_api "$CONTROL_PLANE_IP" 300 secure || {
         log_error "Control plane not ready for bootstrap"
         return 1
     }
 
-    # Check if already bootstrapped
-    if talosctl --nodes "$CONTROL_PLANE_IP" get members &>/dev/null 2>&1; then
-        log_warn "Cluster appears to be already bootstrapped"
+    # Already-bootstrapped guard: query actual etcd membership. Only a SUCCESSFUL query
+    # means bootstrapped — a failure means the API/etcd isn't reachable yet (do not skip).
+    # (`get members` is cluster-discovery state and returns entries even before bootstrap,
+    # so it is not a reliable guard.)
+    if talosctl --nodes "$CONTROL_PLANE_IP" get etcdmembers &>/dev/null 2>&1; then
+        log_warn "etcd already reports members; cluster appears bootstrapped"
         if ! confirm "Bootstrap anyway? (This can break the cluster if already running)"; then
             log_info "Skipping bootstrap"
             return 0
         fi
     fi
 
-    # Bootstrap
+    # Bootstrap. etcd may not be ready the instant the API comes up (it waits for the
+    # container runtime + volumes), so retry until it succeeds.
     log_info "Bootstrapping cluster (this runs ONCE)..."
-    if talosctl bootstrap --nodes "$CONTROL_PLANE_IP"; then
-        log_success "Bootstrap initiated"
-    else
-        log_error "Bootstrap failed"
-        return 1
-    fi
+    local b_elapsed=0
+    until talosctl bootstrap --nodes "$CONTROL_PLANE_IP" 2>/dev/null; do
+        sleep 5
+        b_elapsed=$((b_elapsed + 5))
+        if [ "$b_elapsed" -ge 120 ]; then
+            log_error "Bootstrap failed (etcd not ready after 120s)"
+            return 1
+        fi
+    done
+    log_success "Bootstrap initiated"
 
     # Wait for bootstrap to complete
     log_info "Waiting for Kubernetes API to become available..."
