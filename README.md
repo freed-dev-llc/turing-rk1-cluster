@@ -7,7 +7,7 @@
 [![CodeQL](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/freed-dev-llc/turing-rk1-cluster/actions/workflows/codeql.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Talos](https://img.shields.io/badge/Talos-v1.13.5-blue)](https://www.talos.dev/)
-[![K3s](https://img.shields.io/badge/K3s-v1.31-FFC61C)](https://k3s.io/)
+[![K3s](https://img.shields.io/badge/K3s-stable_channel-FFC61C)](https://k3s.io/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35.0-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 
 **Related Turing Pi projects:**
@@ -87,7 +87,7 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for detailed feature comparison.
 | Resource | Amount |
 |----------|--------|
 | CPU Cores | 32 (8 per node) |
-| RAM | 64-128GB |
+| RAM | 128GB (4x 32GB) |
 | Storage (eMMC) | 128GB |
 | Storage (NVMe) | 2TB (4x 500GB) |
 | Network | 4x 1Gbps |
@@ -430,6 +430,7 @@ turing-rk1-cluster/
 │       └── metal-arm64.raw   # Current Talos image
 └── repo/                     # Submodules/repos
     ├── sbc-rockchip/         # Talos Rockchip overlay
+    ├── u-boot-rockchip/      # U-Boot for Rockchip (Talos image build)
     ├── rknn-toolkit2/        # RKNN SDK v2.3.2 (for K3s)
     ├── rknn-llm/             # RKLLM v1.2.3 (for K3s)
     └── rknn_model_zoo/       # Pre-built models (for K3s)
