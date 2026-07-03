@@ -465,11 +465,23 @@ kubectl get pvc --all-namespaces         # List all PVCs
 
 ---
 
-## Next Steps After Deployment
+## Roadmap
 
-1. **Install CNI** - Flannel is default, consider Cilium for advanced networking (#57)
-2. **Deploy Metrics Server** - For `kubectl top` and HPA; automated via `./scripts/deploy-talos-cluster.sh metrics-server` (#58)
-3. **Set up Monitoring** - Prometheus + Grafana stack; automated via `./scripts/deploy-talos-cluster.sh monitoring` (#59)
-4. **Test Storage** - Create PVC and verify Longhorn replication; see [docs/STORAGE.md](docs/STORAGE.md#verifying-pvc-creation-and-replication) (#60)
-5. **NPU Workloads** - RKNN/RKLLM is K3s-only on this stack; on Talos, NPU inference via Mesa Teflon is validated - see [docs/NPU-TEFLON.md](docs/NPU-TEFLON.md) (#61)
-6. **Backup Strategy** - Configure Longhorn backup to S3/NFS (#62)
+### Shipped in v1.3.0
+
+- **Metrics Server** - `kubectl top` and HPA; automated via `./scripts/deploy-talos-cluster.sh metrics-server` (#58).
+- **Monitoring** - Prometheus + Grafana stack; automated via `./scripts/deploy-talos-cluster.sh monitoring` (#59).
+- **Storage verification** - PVC creation and Longhorn replication procedure; see [docs/STORAGE.md](docs/STORAGE.md#verifying-pvc-creation-and-replication) (#60).
+- **NPU inference on Talos** - validated via Mesa Teflon (RKNN/RKLLM is K3s-only); see [docs/NPU-TEFLON.md](docs/NPU-TEFLON.md) (#61).
+
+### Next release (v1.4.0)
+
+The live cluster re-platformed to K3s on Armbian in v1.3.0 to run RKLLM NPU inference (see the CHANGELOG). v1.4.0 closes the gap between that running platform and the repo's tooling:
+
+1. **K3s tooling reconciliation** - the deploy scripts and most docs still describe the Talos path. Bring `deploy-k3s` tooling and the docs to parity with the running K3s/Armbian cluster so a fresh bring-up matches what is deployed.
+2. **RKLLM / exo-rkllama productionization** - harden the NPU inference DaemonSet: resource requests/limits, liveness/readiness probes, model management, and ingress/routing for the exo-rkllama endpoints.
+
+### Deferred (backlog)
+
+- **Cilium CNI** - evaluate Cilium as a Flannel replacement; deferred past v1.4.0, cluster stays on the K3s default Flannel ([#57](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/57)).
+- **Longhorn backup** - configure backup to S3/NFS, re-scoped against the K3s storage setup ([#62](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/62)).
