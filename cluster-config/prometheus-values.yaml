@@ -74,3 +74,9 @@ kubeScheduler:
 
 kubeControllerManager:
   enabled: false
+
+# kube-proxy metrics bind to 127.0.0.1:10249 by default and aren't reachable
+# from the ServiceMonitor's pod network scrape without extra kube-proxy
+# config; disable rather than carry a permanently-down target.
+kubeProxy:
+  enabled: false

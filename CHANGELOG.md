@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`deploy-talos-cluster.sh metrics-server`** (Phase 10): installs the `metrics-server` Helm chart with `--kubelet-insecure-tls`, needed because Talos kubelet serving certs carry only a DNS SAN and fail the default IP-based TLS verification. Wired into the `deploy` flow alongside the Longhorn prompt. Validated end-to-end on the 4-node hardware - `kubectl top nodes`/`kubectl top pods` return data from all 4 nodes ([#58](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/58)).
+- **`deploy-talos-cluster.sh monitoring`** (Phase 11): installs `kube-prometheus-stack` from `cluster-config/prometheus-values.yaml` and the Longhorn `ServiceMonitor`. Disabled the `kubeProxy` scrape target (metrics bind to `127.0.0.1` by default, unreachable from the ServiceMonitor). Validated end-to-end on the 4-node hardware - all 30 Prometheus scrape targets up, Grafana healthy with 15 pre-installed Kubernetes dashboards ([#59](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/59)).
+
+### Fixed
+
+- **`install_longhorn` / new `install_monitoring`: privileged pods rejected by the cluster's default "baseline" PodSecurity** on a freshly-created namespace - `longhorn-manager` (hostPath/privileged) and `node-exporter` (hostNetwork/hostPID) both stayed un-schedulable until their namespace was labeled `pod-security.kubernetes.io/enforce=privileged`. `docs/INSTALLATION.md`'s manual steps already did this; the scripted `install_longhorn()` path did not. Both phases now label their namespace before installing ([#65](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/65)).
 
 ## [1.2.1] - 2026-06-23
 

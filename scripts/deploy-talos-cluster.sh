@@ -685,6 +685,14 @@ install_longhorn() {
     helm repo add longhorn https://charts.longhorn.io
     helm repo update
 
+    # longhorn-manager needs privileged/hostPath access; the cluster's default
+    # PodSecurity admission ("baseline") rejects it unless the namespace is
+    # explicitly labeled first. --create-namespace on a fresh install creates
+    # a bare namespace with no such label, so ensure it here regardless of
+    # whether this is a fresh install or an upgrade of an existing one.
+    kubectl create namespace longhorn-system --dry-run=client -o yaml | kubectl apply -f -
+    kubectl label namespace longhorn-system pod-security.kubernetes.io/enforce=privileged --overwrite
+
     # Check if already installed
     if helm list -n longhorn-system | grep -q longhorn; then
         log_warn "Longhorn already installed"
@@ -776,6 +784,79 @@ install_metrics_server() {
 }
 
 # =============================================================================
+# Phase 11: Install Monitoring (Prometheus + Grafana)
+# =============================================================================
+
+install_monitoring() {
+    log_info "=== Phase 11: Installing Monitoring Stack ==="
+
+    cd "$CONFIG_DIR"
+    export KUBECONFIG="$CONFIG_DIR/kubeconfig"
+
+    # Check if nodes are ready
+    log_info "Checking node status..."
+    if ! kubectl get nodes &>/dev/null; then
+        log_error "Cannot access Kubernetes cluster"
+        return 1
+    fi
+
+    if ! kubectl get storageclass longhorn &>/dev/null; then
+        log_warn "No 'longhorn' storage class found - Grafana/Prometheus/Alertmanager PVCs will stay Pending"
+        if ! confirm "Continue anyway?"; then
+            return 0
+        fi
+    fi
+
+    # Add prometheus-community repo
+    log_info "Adding prometheus-community Helm repository..."
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo update prometheus-community
+
+    # node-exporter needs hostNetwork/hostPID/hostPath access; the cluster's
+    # default PodSecurity admission ("baseline") rejects it unless the
+    # namespace is explicitly labeled first (same issue as longhorn-system).
+    kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+    kubectl label namespace monitoring pod-security.kubernetes.io/enforce=privileged --overwrite
+
+    # Check if already installed
+    if helm list -n monitoring | grep -q prometheus; then
+        log_warn "Monitoring stack already installed"
+        if ! confirm "Upgrade monitoring stack?"; then
+            return 0
+        fi
+        helm upgrade prometheus prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            -f "$CONFIG_DIR/prometheus-values.yaml"
+    else
+        log_info "Installing kube-prometheus-stack..."
+        helm install prometheus prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            -f "$CONFIG_DIR/prometheus-values.yaml"
+    fi
+
+    # Wait for the stack to be ready
+    log_info "Waiting for monitoring pods to be ready..."
+    kubectl -n monitoring wait --for=condition=ready pod -l release=prometheus --timeout=300s || {
+        log_warn "Monitoring pods not ready yet"
+    }
+
+    # Longhorn metrics, if Longhorn is installed
+    if kubectl get namespace longhorn-system &>/dev/null; then
+        log_info "Adding Longhorn ServiceMonitor..."
+        kubectl apply -f "$CONFIG_DIR/longhorn-servicemonitor.yaml"
+    fi
+
+    log_success "Monitoring stack installation complete"
+    log_info "Get the Grafana admin password:"
+    echo "  kubectl -n monitoring get secrets prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d; echo"
+    log_info "Access Grafana / Prometheus / Alertmanager:"
+    echo "  kubectl -n monitoring port-forward svc/prometheus-grafana 3000:80"
+    echo "  kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090"
+    echo "  kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-alertmanager 9093:9093"
+    log_info "See docs/MONITORING.md for ingress hostnames and dashboard details."
+}
+
+# =============================================================================
 # Utility Commands
 # =============================================================================
 
@@ -864,6 +945,7 @@ Commands:
   kubeconfig      Get kubeconfig for kubectl access
   longhorn        Install Longhorn storage
   metrics-server  Install Metrics Server (kubectl top, HPA)
+  monitoring      Install Prometheus + Grafana monitoring stack
 
   status          Show cluster status
   reset           Reset cluster (DESTRUCTIVE!)
@@ -905,6 +987,10 @@ main() {
                 if confirm "Install Metrics Server?"; then
                     install_metrics_server
                 fi
+                echo ""
+                if confirm "Install Prometheus + Grafana monitoring stack?"; then
+                    install_monitoring
+                fi
             fi
             ;;
         prereq|prerequisites)
@@ -937,6 +1023,9 @@ main() {
             ;;
         metrics-server|metrics)
             install_metrics_server
+            ;;
+        monitoring)
+            install_monitoring
             ;;
         status)
             cluster_status
