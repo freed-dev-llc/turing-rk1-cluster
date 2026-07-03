@@ -69,6 +69,7 @@ Add to `/etc/hosts`:
 - [STORAGE.md](STORAGE.md) - Storage configuration details
 - [NETWORKING.md](NETWORKING.md) - Network configuration details
 - [MONITORING.md](MONITORING.md) - Monitoring setup details
+- [NPU-TEFLON.md](NPU-TEFLON.md) - NPU inference via Mesa Teflon (Talos-only path; RKNN/RKLLM is K3s-only)
 
 ## Scripts
 
