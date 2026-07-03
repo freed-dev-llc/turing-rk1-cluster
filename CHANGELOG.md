@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`deploy-talos-cluster.sh metrics-server`** (Phase 10): installs the `metrics-server` Helm chart with `--kubelet-insecure-tls`, needed because Talos kubelet serving certs carry only a DNS SAN and fail the default IP-based TLS verification. Wired into the `deploy` flow alongside the Longhorn prompt. Validated end-to-end on the 4-node hardware - `kubectl top nodes`/`kubectl top pods` return data from all 4 nodes ([#58](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/58)).
+
 ## [1.2.1] - 2026-06-23
 
 ### Fixed

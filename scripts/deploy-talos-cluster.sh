@@ -723,6 +723,59 @@ install_longhorn() {
 }
 
 # =============================================================================
+# Phase 10: Install Metrics Server
+# =============================================================================
+
+install_metrics_server() {
+    log_info "=== Phase 10: Installing Metrics Server ==="
+
+    cd "$CONFIG_DIR"
+    export KUBECONFIG="$CONFIG_DIR/kubeconfig"
+
+    # Check if nodes are ready
+    log_info "Checking node status..."
+    if ! kubectl get nodes &>/dev/null; then
+        log_error "Cannot access Kubernetes cluster"
+        return 1
+    fi
+
+    # Add metrics-server repo
+    log_info "Adding metrics-server Helm repository..."
+    helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+    helm repo update metrics-server
+
+    # Talos kubelet serving certs carry only a DNS SAN, not the node IP metrics-server
+    # scrapes over, so the default TLS verification fails with "doesn't contain any IP
+    # SANs" - --kubelet-insecure-tls works around that (the connection is still to the
+    # cluster's own kubelets over the private cluster network, not exposed externally).
+    if helm list -n kube-system | grep -q metrics-server; then
+        log_warn "metrics-server already installed"
+        if ! confirm "Upgrade metrics-server?"; then
+            return 0
+        fi
+        helm upgrade metrics-server metrics-server/metrics-server \
+            --namespace kube-system \
+            --set 'args={--kubelet-insecure-tls}'
+    else
+        log_info "Installing metrics-server..."
+        helm install metrics-server metrics-server/metrics-server \
+            --namespace kube-system \
+            --set 'args={--kubelet-insecure-tls}'
+    fi
+
+    # Wait for metrics-server to be ready
+    log_info "Waiting for metrics-server rollout..."
+    kubectl -n kube-system rollout status deployment/metrics-server --timeout=120s || {
+        log_warn "metrics-server not ready yet"
+    }
+
+    log_success "Metrics Server installation complete"
+    log_info "Verify with:"
+    echo "  kubectl top nodes"
+    echo "  kubectl top pods -A"
+}
+
+# =============================================================================
 # Utility Commands
 # =============================================================================
 
@@ -810,6 +863,7 @@ Commands:
   bootstrap       Bootstrap Kubernetes cluster
   kubeconfig      Get kubeconfig for kubectl access
   longhorn        Install Longhorn storage
+  metrics-server  Install Metrics Server (kubectl top, HPA)
 
   status          Show cluster status
   reset           Reset cluster (DESTRUCTIVE!)
@@ -847,6 +901,10 @@ main() {
                 if confirm "Install Longhorn storage?"; then
                     install_longhorn
                 fi
+                echo ""
+                if confirm "Install Metrics Server?"; then
+                    install_metrics_server
+                fi
             fi
             ;;
         prereq|prerequisites)
@@ -876,6 +934,9 @@ main() {
             ;;
         longhorn|storage)
             install_longhorn
+            ;;
+        metrics-server|metrics)
+            install_metrics_server
             ;;
         status)
             cluster_status
