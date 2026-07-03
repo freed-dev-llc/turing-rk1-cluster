@@ -1,0 +1,108 @@
+---
+# NPU Inference Test - Mesa Teflon TFLite delegate on the RK3588 "rocket" NPU
+#
+# On this Talos cluster only the open-source Mesa Teflon delegate path works
+# (small CNNs via TFLite); the proprietary RKNN/RKLLM SDK is K3s/Armbian-only.
+# See docs/NPU-TEFLON.md for background and results.
+#
+# No prebuilt package exists yet for Mesa's rocket/teflon support (merged
+# ahead of Mesa 25.3), so this builds Mesa from source inside the pod against
+# the node's own kernel headers/device - takes ~10-20 minutes on an 8-core
+# RK1 node. Requires the `npu-teflon-test` namespace to be labeled
+# `pod-security.kubernetes.io/enforce=privileged` (privileged pod + /dev/accel
+# hostPath), matching the existing Longhorn/monitoring namespaces.
+#
+# Usage:
+#   kubectl create namespace npu-teflon-test
+#   kubectl label namespace npu-teflon-test pod-security.kubernetes.io/enforce=privileged
+#   kubectl apply -f npu-teflon-test.yaml
+#   kubectl -n npu-teflon-test logs -f npu-teflon-test --tail=-1
+#
+# Cleanup:
+#   kubectl delete namespace npu-teflon-test
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: npu-teflon-test-script
+  namespace: npu-teflon-test
+data:
+  run.sh: |
+    #!/bin/sh
+    set -eu
+
+    echo "=== Installing Mesa build dependencies ==="
+    apt-get update -qq
+    sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources
+    apt-get update -qq
+    DEBIAN_FRONTEND=noninteractive apt-get build-dep -y mesa
+    DEBIAN_FRONTEND=noninteractive apt-get install -y git cmake python3-pip python3-venv wget ninja-build
+
+    echo "=== Cloning Mesa (upstream, rocket/teflon support predates the 25.3 release) ==="
+    git clone --depth 1 https://gitlab.freedesktop.org/mesa/mesa.git /root/mesa
+
+    echo "=== Building libteflon.so (gallium: etnaviv,rocket; teflon=true) ==="
+    cd /root/mesa
+    meson setup build -Dgallium-drivers=etnaviv,rocket -Dvulkan-drivers= -Dteflon=true
+    ninja -C build
+
+    echo "=== Setting up Python (tflite-runtime is deprecated; using its ai-edge-litert successor) ==="
+    python3 -m venv /root/venv
+    /root/venv/bin/pip install -q --upgrade pip
+    /root/venv/bin/pip install -q ai-edge-litert pillow numpy
+    sed -i 's/import tflite_runtime.interpreter as tflite/import ai_edge_litert.interpreter as tflite/' \
+      /root/mesa/src/gallium/frontends/teflon/tests/classification.py
+
+    echo "=== Fetching test model + image (official TensorFlow Lite example assets) ==="
+    cd /tmp
+    wget -q https://storage.googleapis.com/download.tensorflow.org/models/mobilenet_v1_2018_08_02/mobilenet_v1_1.0_224_quant.tgz -O mobilenet.tgz
+    tar xzf mobilenet.tgz
+    wget -q https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg -O grace_hopper.jpg
+    /root/venv/bin/python3 -c "from PIL import Image; Image.open('/tmp/grace_hopper.jpg').convert('RGB').save('/tmp/grace_hopper.bmp')"
+
+    echo "=== Running inference through the Teflon NPU delegate ==="
+    cd /root/mesa
+    TEFLON_DEBUG=verbose ETNA_MESA_DEBUG=ml_msgs /root/venv/bin/python3 \
+      src/gallium/frontends/teflon/tests/classification.py \
+      -i /tmp/grace_hopper.bmp \
+      -m /tmp/mobilenet_v1_1.0_224_quant.tflite \
+      -l src/gallium/frontends/teflon/tests/labels_mobilenet_quant_v1_224.txt \
+      -e build/src/gallium/targets/teflon/libteflon.so
+
+    echo "=== Done. Expect top result: military uniform (~0.90) ==="
+    sleep infinity
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: npu-teflon-test
+  namespace: npu-teflon-test
+  labels:
+    app: npu-teflon-test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: teflon
+      image: debian:trixie-slim
+      command: ["sh", "/scripts/run.sh"]
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: "4"
+          memory: 4Gi
+        limits:
+          cpu: "8"
+          memory: 6Gi
+      volumeMounts:
+        - name: accel
+          mountPath: /dev/accel
+        - name: script
+          mountPath: /scripts
+  volumes:
+    - name: accel
+      hostPath:
+        path: /dev/accel
+    - name: script
+      configMap:
+        name: npu-teflon-test-script
+        defaultMode: 0755

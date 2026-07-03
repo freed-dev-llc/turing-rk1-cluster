@@ -153,11 +153,12 @@ Validation of recent changes against the **real 4-node RK1 hardware**. Covers th
 
 ## Phase 4 — NPU / GPU functional (optional) 🟢/🟡
 
-### T4.1 — NPU inference via Mesa Teflon on Talos
+### T4.1 — NPU inference via Mesa Teflon on Talos ✅
 
 - **Steps:** privileged/CDI pod mounting `/dev/accel/accel0`; run a MobileNet TFLite model through the Teflon delegate.
 - **Expected:** inference runs on the NPU (not CPU fallback). LLM/RKLLM is **expected to NOT work** here (open `rocket` stack).
 - **Validates:** #41 NPU "Partial (Teflon, small CNNs)" claim.
+- **Result (2026-07-03, #61):** confirmed on real hardware. Self-built Mesa Teflon delegate (no prebuilt package exists yet) ran MobileNetV1-quantized inference with all 27 CONV/DWCONV layers marked `supported` in the op-eligibility table - genuine NPU offload, not CPU fallback. Correct classification result (`military uniform`, ~0.90) at ~12-15ms/inference. Reproduced from a clean pod on two different nodes. See [NPU-TEFLON.md](NPU-TEFLON.md) for the full procedure and `cluster-config/npu-teflon-test.yaml`.
 
 ### T4.2 — RKLLM on the K3s/Armbian path
 

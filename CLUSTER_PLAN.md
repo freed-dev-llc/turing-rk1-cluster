@@ -471,5 +471,5 @@ kubectl get pvc --all-namespaces         # List all PVCs
 2. **Deploy Metrics Server** - For `kubectl top` and HPA; automated via `./scripts/deploy-talos-cluster.sh metrics-server` (#58)
 3. **Set up Monitoring** - Prometheus + Grafana stack; automated via `./scripts/deploy-talos-cluster.sh monitoring` (#59)
 4. **Test Storage** - Create PVC and verify Longhorn replication; see [docs/STORAGE.md](docs/STORAGE.md#verifying-pvc-creation-and-replication) (#60)
-5. **NPU Workloads** - Deploy RKNN inference containers (#61)
+5. **NPU Workloads** - RKNN/RKLLM is K3s-only on this stack; on Talos, NPU inference via Mesa Teflon is validated - see [docs/NPU-TEFLON.md](docs/NPU-TEFLON.md) (#61)
 6. **Backup Strategy** - Configure Longhorn backup to S3/NFS (#62)
