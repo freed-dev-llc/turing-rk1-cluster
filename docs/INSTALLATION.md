@@ -26,6 +26,7 @@ Use the `deploy-talos-cluster.sh` script for automated deployment:
 | `bootstrap` | Bootstrap Kubernetes cluster |
 | `kubeconfig` | Get kubeconfig for kubectl access |
 | `longhorn` | Install Longhorn storage |
+| `metrics-server` | Install Metrics Server (`kubectl top`, HPA) |
 | `status` | Show cluster status |
 | `reset` | Reset cluster (DESTRUCTIVE!) |
 

@@ -468,7 +468,7 @@ kubectl get pvc --all-namespaces         # List all PVCs
 ## Next Steps After Deployment
 
 1. **Install CNI** - Flannel is default, consider Cilium for advanced networking (#57)
-2. **Deploy Metrics Server** - For `kubectl top` and HPA (#58)
+2. **Deploy Metrics Server** - For `kubectl top` and HPA; automated via `./scripts/deploy-talos-cluster.sh metrics-server` (#58)
 3. **Set up Monitoring** - Prometheus + Grafana stack (#59)
 4. **Test Storage** - Create PVC and verify Longhorn replication (#60)
 5. **NPU Workloads** - Deploy RKNN inference containers (#61)
