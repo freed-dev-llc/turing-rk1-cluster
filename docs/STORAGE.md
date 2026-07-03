@@ -243,6 +243,100 @@ spec:
 
 ---
 
+## Verifying PVC Creation and Replication
+
+Run this after a fresh Longhorn install, an upgrade, or any time you need to confirm
+storage is actually resilient rather than assume it. Validated end-to-end on the 4-node
+hardware (2026-07-03).
+
+### 1. Create a test PVC and write data
+
+```bash
+kubectl create namespace longhorn-test
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-test-pvc
+  namespace: longhorn-test
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: longhorn-test-writer
+  namespace: longhorn-test
+spec:
+  containers:
+    - name: writer
+      image: busybox
+      command: ["sh", "-c", "echo 'longhorn-pvc-verification' > /data/testfile.txt && md5sum /data/testfile.txt && sleep infinity"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: longhorn-test-pvc
+EOF
+kubectl -n longhorn-test wait --for=condition=ready pod/longhorn-test-writer --timeout=60s
+kubectl -n longhorn-test logs longhorn-test-writer   # note the md5sum for later comparison
+```
+
+### 2. Confirm replica count and placement
+
+```bash
+PVC_VOL=$(kubectl -n longhorn-test get pvc longhorn-test-pvc -o jsonpath='{.spec.volumeName}')
+kubectl -n longhorn-system get replicas.longhorn.io -l longhornvolume=$PVC_VOL \
+  -o custom-columns='NAME:.metadata.name,NODE:.spec.nodeID'
+```
+
+Expect one replica per `numberOfReplicas` in the storage class (`2` by default -
+see `parameters.numberOfReplicas` on the `longhorn` StorageClass), each on a
+different node.
+
+### 3. Test node-reboot resilience
+
+Reboot the node hosting one of the replicas (find its IP with `kubectl get nodes -o wide`):
+
+```bash
+talosctl --talosconfig cluster-config/talosconfig --nodes <node-ip> reboot
+```
+
+Watch the volume cycle through `detached` (while the node is down) back to
+`attached`, and robustness through `degraded` (replica resyncing) back to `healthy`:
+
+```bash
+watch kubectl -n longhorn-system get volumes.longhorn.io $PVC_VOL \
+  -o custom-columns='STATE:.status.state,ROBUSTNESS:.status.robustness'
+```
+
+Then re-read the file and confirm the `md5sum` from step 1 is unchanged.
+
+### Gotcha: use a Deployment, not a bare Pod, for anything that must self-heal
+
+A bare `Pod` (no owning controller) can get permanently wedged after even a brief
+node-not-ready blip - well within the 300s `tolerationSeconds` for the
+`node.kubernetes.io/not-ready` taint, the pod can still end up stuck with
+`status.conditions: DisruptionTarget=True` and `PodReadyToStartContainers=False`,
+and kubelet never restarts the container even with `restartPolicy: Always`. No
+controller is watching a bare Pod to notice and recreate it. `kubectl delete pod`
+followed by re-applying the same manifest (same PVC) recovers immediately - real
+workloads should use a `Deployment` or `StatefulSet` so this recovery is automatic.
+
+### Cleanup
+
+```bash
+kubectl delete namespace longhorn-test
+```
+
+---
+
 ## Longhorn UI Access
 
 The Longhorn UI is available via ingress:
