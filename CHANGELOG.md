@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Physical cluster re-platformed from Talos to K3s on Armbian (2026-07-03)** to run
+  RKLLM NPU inference, which requires the vendor-kernel rknpu driver that Talos cannot
+  ship (see `docs/NPU-TEFLON.md` for the Talos-side analysis). All four nodes reflashed
+  to Armbian Trixie (vendor kernel `6.1.115-vendor-rk35xx`, `RKNPU driver: v0.9.8`),
+  K3s v1.36.2, [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.1.0`
+  deployed as a privileged DaemonSet. Validated: streamed chat completions from the
+  NPU (~90% load on all three cores, 3.46 tok/s generate on a w8a8_g128 3B), two
+  replicas on distinct nodes serving concurrent requests 3/3. Bring-up procedure:
+  exo-rkllama `docs/rk-hardware/RUNBOOK.md`. The Talos docs and scripts remain valid
+  for redeploying Talos; they no longer describe the running cluster
+  ([#69](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/69)).
+
 ### Added
 
 - **`deploy-talos-cluster.sh metrics-server`** (Phase 10): installs the `metrics-server` Helm chart with `--kubelet-insecure-tls`, needed because Talos kubelet serving certs carry only a DNS SAN and fail the default IP-based TLS verification. Wired into the `deploy` flow alongside the Longhorn prompt. Validated end-to-end on the 4-node hardware - `kubectl top nodes`/`kubectl top pods` return data from all 4 nodes ([#58](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/58)).
@@ -16,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`docs/NPU-TEFLON.md` and `cluster-config/npu-teflon-test.yaml`**: NPU inference workload via Mesa's Teflon TFLite delegate - the RKNN/RKLLM SDK this repo also documents is K3s/Armbian-only, so on this Talos cluster the achievable path is the open `rocket` driver + Teflon. Since no distro packages Mesa's rocket/teflon support yet, the manifest builds Mesa from source (not the unofficial prebuilt binary some projects use) and runs a MobileNetV1 classification through the delegate. Validated end-to-end on the 4-node hardware - all 27 CONV/DWCONV layers `supported` (genuine NPU offload), correct classification result, reproduced from a clean pod on two different nodes ([#61](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/61)).
 
 ### Fixed
+
+- **`docs/INSTALLATION-K3S.md`: wrong Armbian image for NPU work** - the guide
+  downloaded `Bookworm_current` (mainline kernel, no rknpu driver), which reproduces
+  the Talos NPU dead-end on Armbian. It now prescribes the `vendor` kernel image
+  (`Trixie_vendor_minimal`) with the verification command, and stages the decompressed
+  image on the BMC microSD for a BMC-local flash (the remote-flash-from-/tmp pitfall
+  already documented for Talos in
+  [#44](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/44))
+  ([#69](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/69)).
 
 - **`install_longhorn` / new `install_monitoring`: privileged pods rejected by the cluster's default "baseline" PodSecurity** on a freshly-created namespace - `longhorn-manager` (hostPath/privileged) and `node-exporter` (hostNetwork/hostPID) both stayed un-schedulable until their namespace was labeled `pod-security.kubernetes.io/enforce=privileged`. `docs/INSTALLATION.md`'s manual steps already did this; the scripted `install_longhorn()` path did not. Both phases now label their namespace before installing ([#65](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/65)).
 
