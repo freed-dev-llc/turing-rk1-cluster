@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`CLUSTER_PLAN.md`: reworked the "Next Steps After Deployment" list into a `Roadmap` section** - marks the metrics-server / monitoring / storage / NPU-Teflon items as shipped in v1.3.0, sets the v1.4.0 focus (K3s tooling reconciliation to match the re-platformed cluster, and RKLLM/exo-rkllama productionization), and moves Cilium (#57) and Longhorn backup (#62) to a deferred backlog.
+
 ## [1.3.0] - 2026-07-03
 
 ### Changed
