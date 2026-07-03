@@ -150,14 +150,21 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 ### Required Images
 
-Download Armbian for Turing RK1:
+Download Armbian for Turing RK1.
+
+> **Use the `vendor` kernel image, not `current`/`edge`.** The mainline kernels have
+> no rknpu driver, so RKNN/RKLLM NPU inference cannot work on them (the same
+> limitation as stock Talos, see `docs/NPU-TEFLON.md`). The vendor (Rockchip BSP
+> 6.1) build ships rknpu; verified 2026-07-03 on all four nodes as kernel
+> `6.1.115-vendor-rk35xx` with `RKNPU driver: v0.9.8`
+> (`cat /sys/kernel/debug/rknpu/version`).
+
 ```bash
-# Official Armbian image for Turing RK1
+# Official Armbian image for Turing RK1 (vendor kernel, minimal CLI)
 # Check: https://www.armbian.com/turing-rk1/
-# Or: https://github.com/armbian/community/releases
 
 wget -O armbian-turing-rk1.img.xz \
-  "https://dl.armbian.com/turing-rk1/Bookworm_current"
+  "https://dl.armbian.com/turing-rk1/Trixie_vendor_minimal"
 ```
 
 ---
@@ -220,11 +227,11 @@ export TPI_HOSTNAME=10.10.88.70
 ### Step 1: Download Armbian Image
 
 ```bash
-# Download latest Armbian for Turing RK1
+# Download Armbian for Turing RK1 (vendor kernel; see Required Images above)
 mkdir -p images
 cd images
 wget -O armbian-turing-rk1.img.xz \
-  "https://dl.armbian.com/turing-rk1/Bookworm_current"
+  "https://dl.armbian.com/turing-rk1/Trixie_vendor_minimal"
 ```
 
 ### Step 2: Flash All Nodes
@@ -232,11 +239,16 @@ wget -O armbian-turing-rk1.img.xz \
 ```bash
 # Ensure TPI env vars are set
 
-# Flash all nodes with Armbian
-for node in 1 2 3 4; do
-  echo "Flashing node $node..."
-  tpi flash -n $node --image-path images/armbian-turing-rk1.img.xz
-done
+# Stage the decompressed image on the BMC microSD first: the BMC /tmp tmpfs
+# is ~58 MB and remote flashing of the compressed image is slower than a
+# BMC-local flash (same finding as the Talos deploy script, issue #44).
+unxz -k images/armbian-turing-rk1.img.xz
+scp images/armbian-turing-rk1.img root@$TPI_HOSTNAME:/mnt/sdcard/images/
+
+# Flash all nodes with Armbian (BMC-local)
+ssh root@$TPI_HOSTNAME 'for node in 1 2 3 4; do
+  tpi flash --local --image-path /mnt/sdcard/images/armbian-turing-rk1.img --node $node
+done'
 
 # Power on all nodes
 for node in 1 2 3 4; do
