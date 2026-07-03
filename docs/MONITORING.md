@@ -18,6 +18,10 @@ The monitoring stack includes:
 
 ## Access URLs
 
+> **Requires MetalLB + an nginx ingress controller**, neither of which is deployed by
+> `deploy-talos-cluster.sh` yet - the hostnames below won't resolve until those are in
+> place. Until then, use `kubectl -n monitoring port-forward` (see below).
+
 Add these entries to `/etc/hosts` on your workstation:
 
 ```
@@ -35,6 +39,14 @@ Add these entries to `/etc/hosts` on your workstation:
 ```bash
 kubectl --namespace monitoring get secrets prometheus-grafana \
   -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+```
+
+### Access via Port-Forward (no ingress required)
+
+```bash
+kubectl -n monitoring port-forward svc/prometheus-grafana 3000:80
+kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090
+kubectl -n monitoring port-forward svc/prometheus-kube-prometheus-alertmanager 9093:9093
 ```
 
 ---
