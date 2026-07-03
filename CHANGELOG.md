@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-03
+
 ### Changed
 
 - **Physical cluster re-platformed from Talos to K3s on Armbian (2026-07-03)** to run
@@ -41,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#69](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/69)).
 
 - **`install_longhorn` / new `install_monitoring`: privileged pods rejected by the cluster's default "baseline" PodSecurity** on a freshly-created namespace - `longhorn-manager` (hostPath/privileged) and `node-exporter` (hostNetwork/hostPID) both stayed un-schedulable until their namespace was labeled `pod-security.kubernetes.io/enforce=privileged`. `docs/INSTALLATION.md`'s manual steps already did this; the scripted `install_longhorn()` path did not. Both phases now label their namespace before installing ([#65](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/65)).
+
+- **`README.md`: incorrect K3s badge, RAM total, and submodule list** - the K3s badge claimed `v1.31` (the deploy script installs from the stable channel with no version pin, now labeled "stable channel"); the RAM total read `64-128GB`, contradicting the all-32GB topology (corrected to `128GB` for 4x 32GB); and the `u-boot-rockchip` submodule (defined in `.gitmodules`) was missing from the documented directory structure ([#54](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/54)).
+
+- **`.gitignore`: generated kubeconfig variants left untracked-but-visible** - the rule matched only the exact filename `kubeconfig`, so variants like `kubeconfig-k3s` under `cluster-config/` were not ignored. Broadened to a glob so any kubeconfig credential there is ignored ([#53](https://github.com/freed-dev-llc/turing-rk1-cluster/issues/53)).
 
 ## [1.2.1] - 2026-06-23
 
