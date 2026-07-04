@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **exo-rkllama reference bumped to `rk-v0.2.0`** in the deployment note, matching the DaemonSet pin and the deployed image (NPU-gated model catalog/search) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75)).
+- **exo-rkllama reference bumped to `rk-v0.2.1`** in the deployment note, matching the DaemonSet pin and the deployed image (NPU-gated model catalog/search, plus the NPU onboarding pin) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75), #77).
 - **`CLUSTER_PLAN.md`: reworked the "Next Steps After Deployment" list into a `Roadmap` section** - marks the metrics-server / monitoring / storage / NPU-Teflon items as shipped in v1.3.0, sets the v1.4.0 focus (K3s tooling reconciliation to match the re-platformed cluster, and RKLLM/exo-rkllama productionization), and moves Cilium (#57) and Longhorn backup (#62) to a deferred backlog.
 
 ## [1.3.0] - 2026-07-03
