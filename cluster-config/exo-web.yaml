@@ -1,0 +1,52 @@
+---
+# Stable cluster-wide endpoint for the exo web UI + OpenAI-compatible API.
+# exo runs as a hostNetwork DaemonSet (app.kubernetes.io/name=exo) with each
+# pod bound to :52415 on its node. This Service load-balances across all four
+# nodes; the Traefik Ingress fronts it on a single URL.
+apiVersion: v1
+kind: Service
+metadata:
+  name: exo-web
+  namespace: exo-rk
+  labels:
+    app.kubernetes.io/name: exo
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: exo
+  ports:
+    - name: api
+      port: 52415
+      targetPort: 52415
+      protocol: TCP
+---
+# Traefik Ingress. Reach it at http://exo.local/ (add exo.local -> any node IP
+# to /etc/hosts) or directly at http://<node-ip>/ via the hostless rule.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: exo-web
+  namespace: exo-rk
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: exo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exo-web
+                port:
+                  number: 52415
+    # Also allow access via raw node IP without a Host header.
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exo-web
+                port:
+                  number: 52415
