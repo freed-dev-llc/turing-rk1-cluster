@@ -1,0 +1,93 @@
+---
+# Self-healing preloader for exo NPU model instances.
+#
+# exo instance state is ephemeral: a node reboot, pod restart, or image roll drops
+# every loaded model instance, and exo does not auto-restore them (chat requests
+# 404 rather than lazy-load). This CronJob reconciles the desired state: it ensures
+# the target model is loaded on one instance per NPU node, giving N-way parallel
+# request handling (exo routes each request to the least-loaded instance).
+#
+# It is idempotent and cheap when healthy: if the model already has one instance per
+# node, the run is a no-op. After a reboot it re-launches the missing instances,
+# waiting for each to finish loading (node RAM committed) before starting the next so
+# placement spreads them across distinct nodes.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: exo-model-preload
+  namespace: exo-rk
+  labels:
+    app.kubernetes.io/name: exo-model-preload
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: exo-model-preload
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: preload
+              image: alpine:3.20
+              env:
+                # exo API: the in-cluster Service created by exo-web.yaml.
+                - name: EXO_API
+                  value: "http://exo-web:52415"
+                - name: MODEL
+                  value: "qwen2.5-14b-rkllm"
+                # Optional cap; defaults to the number of NPU nodes when empty.
+                - name: INSTANCES
+                  value: ""
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  apk add --no-cache curl jq >/dev/null 2>&1
+
+                  st() { curl -sf -m 10 "$EXO_API/state"; }
+                  inst_count() {
+                    st | jq --arg m "$MODEL" \
+                      '[.instances[] | .RkllmSingleNodeInstance // empty
+                        | select(.shardAssignments.modelId==$m)] | length'
+                  }
+                  # A node counts as "loaded" once >10GB of its RAM is committed.
+                  loaded_nodes() {
+                    st | jq '[.nodeMemory[]
+                      | select((.ramTotal.inBytes - .ramAvailable.inBytes) > 10e9)] | length'
+                  }
+
+                  DESIRED="${INSTANCES:-$(st | jq '.nodeIdentities | length')}"
+                  have=$(inst_count)
+                  echo "model=$MODEL desired=$DESIRED have=$have loaded_nodes=$(loaded_nodes)"
+
+                  attempt=0
+                  while [ "$have" -lt "$DESIRED" ]; do
+                    attempt=$((attempt + 1))
+                    if [ "$attempt" -gt "$((DESIRED + 2))" ]; then
+                      echo "safety stop after $attempt attempts (have=$have)"; break
+                    fi
+                    before=$(loaded_nodes)
+                    placement=$(curl -sf -m 20 \
+                      "$EXO_API/instance/placement?model_id=$MODEL&sharding=Pipeline&instance_meta=RkllmSingleNode&min_nodes=1")
+                    msg=$(curl -sf -m 30 -X POST "$EXO_API/instance" \
+                      -H 'Content-Type: application/json' \
+                      -d "$(printf '%s' "$placement" | jq -c '{instance: .}')" \
+                      | jq -r '.message // .')
+                    echo "launch attempt $attempt: $msg"
+                    # Wait for the new instance to finish loading before the next launch
+                    # so placement sees the node as used and spreads to a fresh node.
+                    for _ in $(seq 1 30); do
+                      sleep 8
+                      [ "$(loaded_nodes)" -gt "$before" ] && break
+                    done
+                    have=$(inst_count)
+                    echo "  have=$have loaded_nodes=$(loaded_nodes)"
+                  done
+                  echo "reconcile complete: $have/$DESIRED instances of $MODEL"

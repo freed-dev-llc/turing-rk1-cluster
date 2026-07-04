@@ -96,6 +96,8 @@ See [docs/COMPARISON.md](docs/COMPARISON.md) for a detailed feature comparison.
 | Portainer Agent | [cluster-config/portainer-agent.yaml](cluster-config/portainer-agent.yaml) | Agent deployment |
 | Prometheus Values | [cluster-config/prometheus-values.yaml](cluster-config/prometheus-values.yaml) | Monitoring stack config |
 | External Scrape | [cluster-config/external-scrape-config.yaml](cluster-config/external-scrape-config.yaml) | Docker host monitoring |
+| exo Web UI | [cluster-config/exo-web.yaml](cluster-config/exo-web.yaml) | Cluster-wide endpoint for the exo web UI + API |
+| exo Model Preload | [cluster-config/exo-preload-cronjob.yaml](cluster-config/exo-preload-cronjob.yaml) | Self-healing NPU model preloader |
 
 ### Reference Documentation
 
@@ -242,6 +244,51 @@ Test BMC connectivity:
 ```bash
 ./scripts/wipe-cluster.sh status
 ```
+
+---
+
+## Distributed NPU Inference (exo)
+
+The cluster runs [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) as a
+DaemonSet in the `exo-rk` namespace, serving LLM inference on each node's RK3588 NPU.
+Models are pre-converted `.rkllm` files stored on the NVMe drives; the web UI and
+OpenAI-compatible API are reachable at `http://exo.local/` (see
+[exo-web.yaml](cluster-config/exo-web.yaml)).
+
+### How instances and parallelism work
+
+A model runs as a single-node, whole-model instance: one launched instance loads the
+full model on one node's NPU. exo routes each request to the **least-loaded** instance
+and each instance processes one generation at a time, so running one instance per node
+gives N-way parallelism (four concurrent requests on the four RK1 nodes).
+
+Instance state is ephemeral. A reboot, pod restart, or image roll drops every loaded
+instance, and exo does not auto-restore them (chat requests return 404 rather than
+lazy-loading). The model files and cards survive on the NVMe; only the loaded
+instances are lost.
+
+### Example: self-healing model preloader
+
+[exo-preload-cronjob.yaml](cluster-config/exo-preload-cronjob.yaml) reconciles the
+desired state on a schedule: it ensures the target model is loaded on one instance per
+NPU node, re-launching any that are missing after a reboot. It is idempotent (a no-op
+when already fully loaded) and waits for each instance to finish loading before
+starting the next, so placement spreads them across distinct nodes.
+
+```bash
+# Deploy the preloader (defaults to model qwen2.5-14b-rkllm, one instance per node)
+kubectl apply -f cluster-config/exo-preload-cronjob.yaml
+
+# Force a reconcile now instead of waiting for the schedule
+kubectl -n exo-rk create job exo-preload-now --from=cronjob/exo-model-preload
+kubectl -n exo-rk logs -f job/exo-preload-now
+# model=qwen2.5-14b-rkllm desired=4 have=3 loaded_nodes=3
+# launch attempt 1: Command received.
+# reconcile complete: 4/4 instances of qwen2.5-14b-rkllm
+```
+
+Change the `MODEL` env in the manifest to preload a different model, or set `INSTANCES`
+to cap the count below the node total.
 
 ---
 
