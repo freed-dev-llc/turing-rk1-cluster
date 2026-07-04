@@ -36,7 +36,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 
 > **Current deployment (2026-07-03):** the physical cluster runs **K3s on Armbian**
 > (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM inference from the RK3588
-> NPUs via [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.1.0`
+> NPUs via [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.0`
 > (validated: streamed completions, ~90% load on all three NPU cores, data-parallel
 > routing across nodes). The Talos documentation and scripts below remain the
 > supported path for redeploying an immutable cluster; they no longer describe the
