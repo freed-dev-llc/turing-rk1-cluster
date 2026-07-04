@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`cluster-config/exo-web.yaml`: cluster-wide endpoint for the exo web UI + OpenAI-compatible API** - a ClusterIP Service load-balancing the exo `hostNetwork` DaemonSet across all four nodes, fronted by a Traefik Ingress (`http://exo.local/`), so the per-node `:52415` UIs share one stable URL ([#73](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/73)).
+- **`cluster-config/exo-preload-cronjob.yaml`: self-healing NPU model preloader** - a CronJob in the `exo-rk` namespace that keeps a target model loaded on one exo instance per NPU node for N-way parallel request handling. exo instance state is ephemeral (a reboot, pod restart, or image roll drops loaded instances and exo does not auto-restore them, chat requests 404 rather than lazy-load), so the job reconciles the desired count after any restart; idempotent when healthy. Validated live: no-op at 4/4, and recovery relaunched a deleted instance back to 4/4. README documents the behavior and a worked example ([#74](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/74)).
+
 ### Changed
 
+- **exo-rkllama reference bumped to `rk-v0.2.0`** in the deployment note, matching the DaemonSet pin and the deployed image (NPU-gated model catalog/search) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75)).
 - **`CLUSTER_PLAN.md`: reworked the "Next Steps After Deployment" list into a `Roadmap` section** - marks the metrics-server / monitoring / storage / NPU-Teflon items as shipped in v1.3.0, sets the v1.4.0 focus (K3s tooling reconciliation to match the re-platformed cluster, and RKLLM/exo-rkllama productionization), and moves Cilium (#57) and Longhorn backup (#62) to a deferred backlog.
 
 ## [1.3.0] - 2026-07-03
