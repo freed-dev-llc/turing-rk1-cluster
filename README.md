@@ -25,6 +25,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 - [Hardware](#hardware)
 - [Software Stack](#software-stack)
 - [Access & Networking](#access--networking)
+- [Distributed NPU Inference (exo)](#distributed-npu-inference-exo)
 - [Limitations & Known Issues](#limitations--known-issues)
 - [Repository Structure](#repository-structure)
 - [Security Notes](#security-notes)
@@ -34,13 +35,14 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 
 ## Choose Your Distribution
 
-> **Current deployment (2026-07-03):** the physical cluster runs **K3s on Armbian**
-> (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM inference from the RK3588
-> NPUs via [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.1`
-> (validated: streamed completions, ~90% load on all three NPU cores, data-parallel
-> routing across nodes). The Talos documentation and scripts below remain the
-> supported path for redeploying an immutable cluster; they no longer describe the
-> running hardware.
+> **Current deployment (re-platformed 2026-07-03):** the physical cluster runs
+> **K3s on Armbian** (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM
+> inference from the RK3588 NPUs via
+> [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.1`
+> (validated at bring-up: streamed completions, ~90% load on all three NPU
+> cores, data-parallel routing across nodes). The Talos documentation and
+> scripts below remain the supported path for redeploying an immutable cluster;
+> they no longer describe the running hardware.
 
 | Distribution | Best For | NPU/GPU | Shell Access |
 |--------------|----------|---------|--------------|
@@ -254,6 +256,13 @@ DaemonSet in the `exo-rk` namespace, serving LLM inference on each node's RK3588
 Models are pre-converted `.rkllm` files stored on the NVMe drives; the web UI and
 OpenAI-compatible API are reachable at `http://exo.local/` (see
 [exo-web.yaml](cluster-config/exo-web.yaml)).
+
+Since `rk-v0.2.0`, an NPU host's model catalog and HuggingFace search are gated to
+models the RKLLM engine can run (search queries the `rkllm` library), and
+`rk-v0.2.1` points the onboarding wizard's small-model option at the bundled
+`llama3.2-3b-rkllm` card on NPU hosts. See the
+[exo-rkllama releases](https://github.com/freed-dev-llc/exo-rkllama/releases)
+for per-version details.
 
 ### How instances and parallelism work
 

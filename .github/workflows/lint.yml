@@ -38,5 +38,5 @@ jobs:
       - name: Run markdownlint
         uses: DavidAnson/markdownlint-cli2-action@6bf21b07787794f89a243495939cd651942aeabe # v24.1.0
         with:
-          config: .markdownlint.json
+          config: .markdownlint-cli2.jsonc
           globs: '**/*.md'

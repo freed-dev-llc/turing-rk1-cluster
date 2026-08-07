@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **exo-rkllama reference bumped to `rk-v0.2.1`** in the deployment note, matching the DaemonSet pin and the deployed image (NPU-gated model catalog/search, plus the NPU onboarding pin) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75), #77).
+- **exo-rkllama reference bumped to `rk-v0.2.1`** in the README deployment note, matching the image deployed on the live cluster's DaemonSet (`rk-v0.2.0`: NPU-gated model catalog/search; `rk-v0.2.1`: the NPU onboarding pin) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75), [#77](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/77)).
 - **`CLUSTER_PLAN.md`: reworked the "Next Steps After Deployment" list into a `Roadmap` section** - marks the metrics-server / monitoring / storage / NPU-Teflon items as shipped in v1.3.0, sets the v1.4.0 focus (K3s tooling reconciliation to match the re-platformed cluster, and RKLLM/exo-rkllama productionization), and moves Cilium (#57) and Longhorn backup (#62) to a deferred backlog.
 
 ## [1.3.0] - 2026-07-03
@@ -114,3 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MetalLB pool YAML snippets at `docs/INSTALLATION.md:732` and `docs/INSTALLATION-K3S.md:604` still used `10.10.88.80-10.10.88.99` (full-range form); reconciled to `80-89` to match the table form and the ground-truth `cluster-config/metallb-config.yaml` (#27).
 - **Config audit (#36):** the `.gitignore` secret-guard for the control-plane node config was illusory (a tracked sanitized copy defeated it) — renamed to `controlplane-node1.example.yaml` and tightened the ignore glob; stale `images/latest_link.txt` pointing at Talos `v1.11.6` → `v1.13.5`; dead `BMC_IP` → `BMC_HOST` in `.env.example`.
 - **Script hardening (#38):** `setup-k3s-node.sh` refuses to format a populated NVMe (data-loss guard) and adds fstab `nofail`; `wipe-cluster.sh` fixed `ssh`-under-`set -e` (no more half-wiped fleet), now wipes the NVMe on Talos resets, and uses `BMC_HOST`; `deploy-k3s-cluster.sh` polls for readiness, derives the TLS SAN, and detects failed remote installs; `talos-cluster-status.sh` no longer aborts on one failed probe; gitignored `cluster-config/*-patched.yaml`; narrowed the `reset` glob.
+
+[Unreleased]: https://github.com/freed-dev-llc/turing-rk1-cluster/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/freed-dev-llc/turing-rk1-cluster/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/freed-dev-llc/turing-rk1-cluster/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/freed-dev-llc/turing-rk1-cluster/releases/tag/v1.2.0
