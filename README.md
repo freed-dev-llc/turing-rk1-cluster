@@ -25,6 +25,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 - [Hardware](#hardware)
 - [Software Stack](#software-stack)
 - [Access & Networking](#access--networking)
+- [Distributed NPU Inference (exo)](#distributed-npu-inference-exo)
 - [Limitations & Known Issues](#limitations--known-issues)
 - [Repository Structure](#repository-structure)
 - [Security Notes](#security-notes)
@@ -34,13 +35,14 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 
 ## Choose Your Distribution
 
-> **Current deployment (2026-07-03):** the physical cluster runs **K3s on Armbian**
-> (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM inference from the RK3588
-> NPUs via [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.1`
-> (validated: streamed completions, ~90% load on all three NPU cores, data-parallel
-> routing across nodes). The Talos documentation and scripts below remain the
-> supported path for redeploying an immutable cluster; they no longer describe the
-> running hardware.
+> **Current deployment (re-platformed 2026-07-03):** the physical cluster runs
+> **K3s on Armbian** (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM
+> inference from the RK3588 NPUs via
+> [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.3`
+> (validated at bring-up: streamed completions, ~90% load on all three NPU
+> cores, data-parallel routing across nodes). The Talos documentation and
+> scripts below remain the supported path for redeploying an immutable cluster;
+> they no longer describe the running hardware.
 
 | Distribution | Best For | NPU/GPU | Shell Access |
 |--------------|----------|---------|--------------|
@@ -255,6 +257,15 @@ Models are pre-converted `.rkllm` files stored on the NVMe drives; the web UI an
 OpenAI-compatible API are reachable at `http://exo.local/` (see
 [exo-web.yaml](cluster-config/exo-web.yaml)).
 
+Since `rk-v0.2.0`, an NPU host's model catalog and HuggingFace search are gated to
+models the RKLLM engine can run (search queries the `rkllm` library), and
+`rk-v0.2.1` points the onboarding wizard's small-model option at the bundled
+`llama3.2-3b-rkllm` card on NPU hosts, and `rk-v0.2.3` returns the engine's
+installation guidance (hand-place the `.rkllm` artifact and add a model card)
+when a hub model cannot be built on an NPU host, instead of an opaque 400. See
+the [exo-rkllama releases](https://github.com/freed-dev-llc/exo-rkllama/releases)
+for per-version details.
+
 ### How instances and parallelism work
 
 A model runs as a single-node, whole-model instance: one launched instance loads the
@@ -289,6 +300,16 @@ kubectl -n exo-rk logs -f job/exo-preload-now
 
 Change the `MODEL` env in the manifest to preload a different model, or set `INSTANCES`
 to cap the count below the node total.
+
+Known failure mode: if a preload pod lands on a node that dies before the pod
+terminates, the pod sticks in `Terminating`, its Job stays in `status.active`,
+and `concurrencyPolicy: Forbid` then skips every subsequent scheduled run
+(observed live: rk1-2 went NotReady on 2026-07-13, three minutes after a
+scheduled run placed a pod on it, and the CronJob's `lastScheduleTime` never
+advanced again). Recover the node or force-delete the stuck pod
+(`kubectl -n exo-rk delete pod <pod> --force --grace-period=0`), then trigger
+a manual job (command above); recreate the CronJob if scheduled runs still do
+not resume.
 
 ---
 

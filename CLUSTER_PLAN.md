@@ -479,7 +479,7 @@ kubectl get pvc --all-namespaces         # List all PVCs
 The live cluster re-platformed to K3s on Armbian in v1.3.0 to run RKLLM NPU inference (see the CHANGELOG). v1.4.0 closes the gap between that running platform and the repo's tooling:
 
 1. **K3s tooling reconciliation** - the deploy scripts and most docs still describe the Talos path. Bring `deploy-k3s` tooling and the docs to parity with the running K3s/Armbian cluster so a fresh bring-up matches what is deployed.
-2. **RKLLM / exo-rkllama productionization** - harden the NPU inference DaemonSet: resource requests/limits, liveness/readiness probes, model management, and ingress/routing for the exo-rkllama endpoints.
+2. **RKLLM / exo-rkllama productionization** - harden the NPU inference DaemonSet: resource requests/limits, liveness/readiness probes, and model management beyond preloading. Ingress/routing for the exo endpoints shipped in [#73](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/73), the self-healing model preloader in [#74](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/74).
 
 ### Deferred (backlog)
 
