@@ -49,7 +49,8 @@ spec:
               args:
                 - |
                   set -eu
-                  apk add --no-cache curl jq >/dev/null 2>&1
+                  apk add --no-cache curl jq >/dev/null 2>&1 \
+                    || { echo "apk add failed (registry unreachable?); deferring to next run"; exit 0; }
 
                   # st() must always emit valid JSON: a curl -sf failure (exo API
                   # stalling while a model loads) would otherwise feed the shell an
@@ -97,7 +98,7 @@ spec:
                       -d "$(printf '%s' "$placement" | jq -c '{instance: .}')"); then
                       echo "launch request failed (attempt $attempt); deferring to next run"; break
                     fi
-                    msg=$(printf '%s' "$resp" | jq -r '.message // .')
+                    msg=$(printf '%s' "$resp" | jq -r '.message // .' 2>/dev/null) || msg="$resp"
                     echo "launch attempt $attempt: $msg"
                     # Wait for the new instance to finish loading before the next launch
                     # so placement sees the node as used and spreads to a fresh node.
