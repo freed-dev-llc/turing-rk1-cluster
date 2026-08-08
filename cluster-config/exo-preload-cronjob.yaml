@@ -41,7 +41,7 @@ spec:
                 - name: EXO_API
                   value: "http://exo-web:52415"
                 - name: MODEL
-                  value: "qwen2.5-14b-rkllm"
+                  value: "deepseek-r1-distill-qwen-14b-rkllm"
                 # Optional cap; defaults to the number of NPU nodes when empty.
                 - name: INSTANCES
                   value: ""
@@ -49,23 +49,35 @@ spec:
               args:
                 - |
                   set -eu
-                  apk add --no-cache curl jq >/dev/null 2>&1
+                  apk add --no-cache curl jq >/dev/null 2>&1 \
+                    || { echo "apk add failed (registry unreachable?); deferring to next run"; exit 0; }
 
-                  st() { curl -sf -m 10 "$EXO_API/state"; }
+                  # st() must always emit valid JSON: a curl -sf failure (exo API
+                  # stalling while a model loads) would otherwise feed the shell an
+                  # empty operand, and busybox ash treats [ "" -gt 1 ] as a hard
+                  # "out of range" error. Capture first so a partial body from a
+                  # timed-out transfer is discarded, not passed to jq.
+                  st() {
+                    out=$(curl -sf -m 10 "$EXO_API/state") || out='{}'
+                    printf '%s' "$out"
+                  }
                   inst_count() {
                     st | jq --arg m "$MODEL" \
-                      '[.instances[] | .RkllmSingleNodeInstance // empty
+                      '[.instances[]? | .RkllmSingleNodeInstance // empty
                         | select(.shardAssignments.modelId==$m)] | length'
                   }
                   # A node counts as "loaded" once >10GB of its RAM is committed.
                   loaded_nodes() {
-                    st | jq '[.nodeMemory[]
+                    st | jq '[.nodeMemory[]?
                       | select((.ramTotal.inBytes - .ramAvailable.inBytes) > 10e9)] | length'
                   }
 
                   DESIRED="${INSTANCES:-$(st | jq '.nodeIdentities | length')}"
                   have=$(inst_count)
                   echo "model=$MODEL desired=$DESIRED have=$have loaded_nodes=$(loaded_nodes)"
+                  if [ "$DESIRED" -le 0 ]; then
+                    echo "no node identities visible; deferring to next run"; exit 0
+                  fi
 
                   attempt=0
                   while [ "$have" -lt "$DESIRED" ]; do
@@ -74,12 +86,19 @@ spec:
                       echo "safety stop after $attempt attempts (have=$have)"; break
                     fi
                     before=$(loaded_nodes)
-                    placement=$(curl -sf -m 20 \
-                      "$EXO_API/instance/placement?model_id=$MODEL&sharding=Pipeline&instance_meta=RkllmSingleNode&min_nodes=1")
-                    msg=$(curl -sf -m 30 -X POST "$EXO_API/instance" \
+                    # set -eu would kill the whole reconcile (with an empty log) on a
+                    # failed assignment, so guard both API calls and defer instead:
+                    # the next scheduled run retries with a fresh view.
+                    if ! placement=$(curl -sf -m 20 \
+                      "$EXO_API/instance/placement?model_id=$MODEL&sharding=Pipeline&instance_meta=RkllmSingleNode&min_nodes=1"); then
+                      echo "placement request failed (attempt $attempt); deferring to next run"; break
+                    fi
+                    if ! resp=$(curl -sf -m 30 -X POST "$EXO_API/instance" \
                       -H 'Content-Type: application/json' \
-                      -d "$(printf '%s' "$placement" | jq -c '{instance: .}')" \
-                      | jq -r '.message // .')
+                      -d "$(printf '%s' "$placement" | jq -c '{instance: .}')"); then
+                      echo "launch request failed (attempt $attempt); deferring to next run"; break
+                    fi
+                    msg=$(printf '%s' "$resp" | jq -r '.message // .' 2>/dev/null) || msg="$resp"
                     echo "launch attempt $attempt: $msg"
                     # Wait for the new instance to finish loading before the next launch
                     # so placement sees the node as used and spreads to a fresh node.
