@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **exo DaemonSet rolled to `rk-v0.2.4`; event-log divergence fixed upstream** - the
+  cluster now runs [exo-rkllama `rk-v0.2.4`](https://github.com/freed-dev-llc/exo-rkllama/releases/tag/rk-v0.2.4)
+  (bundled DeepSeek-R1-14B card, `max_tokens` enforcement on the RKLLM path, and
+  the [exo-rkllama#40](https://github.com/freed-dev-llc/exo-rkllama/pull/40)
+  stall-triggered master re-election that fixes the event-log divergence
+  documented in [#85](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/85)).
+  Validated live 2026-08-08: a staggered `rollout restart` of the DaemonSet,
+  the pattern that wedged the mesh for 35+ minutes on 2026-08-07
+  ([exo-rkllama#37](https://github.com/freed-dev-llc/exo-rkllama/issues/37)),
+  reconverged unaided to 4/4 instances 4 minutes after the rollout finished,
+  with catch-up nacks peaking at attempt 2 of the trigger threshold 8. The
+  README deployment note and exo section now name `rk-v0.2.4`, and the
+  failure-mode note scopes the delete-all-pods remedy to pre-`rk-v0.2.4`
+  images ([#86](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/86)).
 - **exo-rkllama reference bumped to `rk-v0.2.1`** in the README deployment note, matching the image deployed on the live cluster's DaemonSet (`rk-v0.2.0`: NPU-gated model catalog/search; `rk-v0.2.1`: the NPU onboarding pin) ([#75](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/75), [#77](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/77)).
 - **`CLUSTER_PLAN.md`: reworked the "Next Steps After Deployment" list into a `Roadmap` section** - marks the metrics-server / monitoring / storage / NPU-Teflon items as shipped in v1.3.0, sets the v1.4.0 focus (K3s tooling reconciliation to match the re-platformed cluster, and RKLLM/exo-rkllama productionization), and moves Cilium (#57) and Longhorn backup (#62) to a deferred backlog.
 - **Dependency bumps**: `actions/checkout` → v7.0.1 ([#82](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/82)); `actions/setup-python` → v7.0.0 ([#80](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/80), semver-major; the removed `pip-install` input was unused here); `DavidAnson/markdownlint-cli2-action` → v24.1.0 ([#79](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/79), semver-major); `github/codeql-action` init/analyze pins moved from the `v4.31.9` annotated-tag object SHA to the release commit SHA it dereferences to ([#78](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/78), [#81](https://github.com/freed-dev-llc/turing-rk1-cluster/pull/81)).
