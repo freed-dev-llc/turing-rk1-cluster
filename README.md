@@ -312,6 +312,15 @@ advanced again). Recover the node or force-delete the stuck pod
 a manual job (command above); recreate the CronJob if scheduled runs still do
 not resume.
 
+A second failure mode lives in exo itself: pods restarted at different times
+can diverge their replicated event logs permanently. Symptoms: pod logs loop
+`Nack attempt N: Requesting Event Log`, launches return "Command received."
+but no instance ever appears, and `nodeIdentities` differs per pod. Restart
+all exo pods in one command
+(`kubectl -n exo-rk delete pods -l app.kubernetes.io/name=exo`) so they
+rejoin on one aligned epoch, then let the preloader reload; details in
+[exo-rkllama#37](https://github.com/freed-dev-llc/exo-rkllama/issues/37).
+
 ---
 
 ## Limitations & Known Issues
