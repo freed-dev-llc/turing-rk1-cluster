@@ -38,7 +38,7 @@ A 4-node bare-metal Kubernetes cluster built on Turing RK1 compute modules, supp
 > **Current deployment (re-platformed 2026-07-03):** the physical cluster runs
 > **K3s on Armbian** (vendor kernel 6.1.115, rknpu driver v0.9.8) to serve LLM
 > inference from the RK3588 NPUs via
-> [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.3`
+> [exo-rkllama](https://github.com/freed-dev-llc/exo-rkllama) `rk-v0.2.4`
 > (validated at bring-up: streamed completions, ~90% load on all three NPU
 > cores, data-parallel routing across nodes). The Talos documentation and
 > scripts below remain the supported path for redeploying an immutable cluster;
@@ -262,7 +262,12 @@ models the RKLLM engine can run (search queries the `rkllm` library), and
 `rk-v0.2.1` points the onboarding wizard's small-model option at the bundled
 `llama3.2-3b-rkllm` card on NPU hosts, and `rk-v0.2.3` returns the engine's
 installation guidance (hand-place the `.rkllm` artifact and add a model card)
-when a hub model cannot be built on an NPU host, instead of an opaque 400. See
+when a hub model cannot be built on an NPU host, instead of an opaque 400.
+`rk-v0.2.4` bundles the `deepseek-r1-distill-qwen-14b-rkllm` card, enforces
+`max_tokens` on the RKLLM path (finish reason `length`), and re-elects the
+master when a pod's event-log sync stalls, fixing the staggered-restart
+divergence noted in [the preloader section](#example-self-healing-model-preloader)
+below. See
 the [exo-rkllama releases](https://github.com/freed-dev-llc/exo-rkllama/releases)
 for per-version details.
 
@@ -312,11 +317,17 @@ advanced again). Recover the node or force-delete the stuck pod
 a manual job (command above); recreate the CronJob if scheduled runs still do
 not resume.
 
-A second failure mode lives in exo itself: pods restarted at different times
-can diverge their replicated event logs permanently. Symptoms: pod logs loop
-`Nack attempt N: Requesting Event Log`, launches return "Command received."
-but no instance ever appears, and `nodeIdentities` differs per pod. Restart
-all exo pods in one command
+A second failure mode lived in exo itself, fixed since `rk-v0.2.4`: pods
+restarted at different times could diverge their replicated event logs
+permanently. Symptoms: pod logs loop `Nack attempt N: Requesting Event Log`,
+launches return "Command received." but no instance ever appears, and
+`nodeIdentities` differs per pod. Since
+[exo-rkllama#40](https://github.com/freed-dev-llc/exo-rkllama/pull/40) a
+stalled router triggers a master re-election and the mesh reconverges unaided;
+validated 2026-08-08 with a staggered `rollout restart` of the DaemonSet (the
+pattern that previously wedged the mesh): 4/4 instances were back 4 minutes
+after the rollout finished, catch-up nacks peaking at attempt 2. On images
+before `rk-v0.2.4`, restart all exo pods in one command
 (`kubectl -n exo-rk delete pods -l app.kubernetes.io/name=exo`) so they
 rejoin on one aligned epoch, then let the preloader reload; details in
 [exo-rkllama#37](https://github.com/freed-dev-llc/exo-rkllama/issues/37).
