@@ -287,7 +287,7 @@ when already fully loaded) and waits for each instance to finish loading before
 starting the next, so placement spreads them across distinct nodes.
 
 ```bash
-# Deploy the preloader (defaults to model qwen2.5-14b-rkllm, one instance per node)
+# Deploy the preloader (defaults to model deepseek-r1-distill-qwen-14b-rkllm, one instance per node)
 kubectl apply -f cluster-config/exo-preload-cronjob.yaml
 
 # Force a reconcile now instead of waiting for the schedule
