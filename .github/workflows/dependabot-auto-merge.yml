@@ -14,6 +14,6 @@ permissions:
 jobs:
   auto-merge:
     if: ${{ github.actor == 'dependabot[bot]' }}
-    uses: freed-dev-llc/.github/.github/workflows/dependabot-auto-merge.yml@main
+    uses: freed-dev-llc/.github/.github/workflows/dependabot-auto-merge.yml@a59051564e5313344808ea85360962e02c50902a # main
     secrets:
       DEPENDABOT_AUTOMERGE_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
